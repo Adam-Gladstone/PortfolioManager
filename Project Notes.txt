@@ -1,0 +1,67 @@
+PortfolioManager Notes
+
+Initial Design
+14/11/2024
+Portfolio Analysis application: 
+FrontEnd: Community Toolkit, WinUI3 C# - OxyPlot for the graphics. 
+Portfolio analysis / Stats: Python backend using Python.NET
+----------------------------------------------------------------------------
+
+Lambda expressions and anonymous functions:
+https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/lambda-expressions
+
+
+
+--------------------------------------------------------------------------------------
+07/01/2025 - 10/01/2025
+[X] Remove async data processing
+[X] Sort out issue initialising the data filename -> need to add code to the activation service.
+[X] PythonService: revert to using PyIOStream etc -> seems to be required for redirecting console output from python
+[X] Remove MainPage, use the PortfolioPage and PortfolioDetailPage instead
+[X] Remove the DataGridPage and SampleDataService
+
+13/01/2025 - 14/01/2025
+[X] Add support for getting the portfolio analysis params (benchmark, start and end date and risk free rate). This requires a 'dialog' and a model ? (PortfolioAnalysisParams).
+[X] Update PortfolioAnalysisParamsDialog to properly set the state of the primary button
+[X] Refactor the interop layer
+[X] Add bool flag and store exception message in the portfolio item: this allows reporting via ReportException()
+[X] Add support for benchmark data and plots
+
+15/01/2025 - 
+[X] Clean up unused artifacts
+[X] Correct issue with the theming colors for the axes
+[] Add README.md; initial checkin
+
+TO DO
+- Update the location where the Python scripts are run. This is currently hard-coded.
+- Redo the portfolio data store: either use a database or a json file. It needs to support CRUD operations.
+- Refactor the PortfolioItem to reflect these changes. Test the portfolio database.
+- Add a setting to point to the datastore (see the BookCatalog)
+- Investigate the performance and address with async?
+
+Redesign to support extending with additional analyses options, for example:
+Portfolio Analyses:
+- Basic (weights, returns, volatility etc)
+- vs Benchmark
+- Minimum variance portfolio, Efficient Frontier 
+
+Going forward:
+Blog post
+Python for Finance Cookbook - Lewinson.pdf
+Python for Algorithmic Trading Cookbook - Strimpel
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

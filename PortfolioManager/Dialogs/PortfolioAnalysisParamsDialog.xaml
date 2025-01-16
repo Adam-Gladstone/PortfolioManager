@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="PortfolioManager.Dialogs.PortfolioAnalysisParamsDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:PortfolioManager.Dialogs"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    mc:Ignorable="d">
+
+    <StackPanel Orientation="Vertical">
+
+        <!--  Benchmark  -->
+        <TextBox
+            x:Name="benchmark"
+            Margin="0,15,0,15"
+            Header="Benchmark"
+            Text="{x:Bind Path=Benchmark, Mode=TwoWay}"
+            TextChanged="Benchmark_TextChanged" />
+
+        <!--  Start Date for the analysis  -->
+        <DatePicker
+            x:Name="Start"
+            Margin="0,15,0,15"
+            DayFormat="{}{day.integer} ({dayofweek.abbreviated})"
+            DayVisible="True"
+            Header="Start Date"
+            IsEnabled="True"
+            MonthFormat="{}{month.full}"
+            MonthVisible="True"
+            SelectedDate="{x:Bind Path=StartDateOffset, Mode=TwoWay}"
+            YearFormat="{}{year.full(4)}"
+            YearVisible="True" />
+
+        <!--  End Date for the analysis  -->
+        <DatePicker
+            x:Name="End"
+            Margin="0,15,0,15"
+            DayFormat="{}{day.integer} ({dayofweek.abbreviated})"
+            DayVisible="True"
+            Header="End Date"
+            IsEnabled="True"
+            MonthFormat="{}{month.full}"
+            MonthVisible="True"
+            SelectedDate="{x:Bind Path=EndDateOffset, Mode=TwoWay}"
+            YearFormat="{}{year.full(4)}"
+            YearVisible="True" />
+
+        <TextBox
+            x:Name="riskFreeRate"
+            Margin="0,15,0,15"
+            Header="Risk Free Rate"
+            Text="{x:Bind Path=RiskFreeRate, Mode=TwoWay}"
+            TextChanged="RiskFreeRate_TextChanged" />
+
+    </StackPanel>
+</Page>

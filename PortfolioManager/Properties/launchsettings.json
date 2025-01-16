@@ -1,0 +1,10 @@
+﻿{
+    "profiles": {
+      "PortfolioManager (Unpackaged)": {
+        "commandName": "Project"
+      },
+      "PortfolioManager (Package)": {
+        "commandName": "MsixPackage"
+      }
+    }
+}

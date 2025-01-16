@@ -1,0 +1,138 @@
+﻿<Page
+    x:Class="PortfolioManager.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="using:PortfolioManager.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:xaml="using:Microsoft.UI.Xaml"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+    </Page.Resources>
+
+    <!--  Main Grid  -->
+    <Grid>
+
+        <!--  Locate all the settings cards (and expanders) inside a ScrollViewer  -->
+        <ScrollViewer>
+
+            <StackPanel x:Name="ContentArea">
+
+                <!--  Appearance and behaviour  -->
+                <TextBlock
+                    Margin="0,5,0,5"
+                    Style="{ThemeResource SubtitleTextBlockStyle}"
+                    Text="Appearance &amp; behaviour" />
+
+                <!--  App theme card  -->
+                <controls:SettingsCard Description="Select which app theme to display" Header="App theme">
+                    <controls:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE790;" />
+                    </controls:SettingsCard.HeaderIcon>
+                    <ComboBox
+                        x:Name="themeMode"
+                        AutomationProperties.AutomationId="themeModeComboBox"
+                        SelectionChanged="ThemeMode_SelectionChanged">
+                        <ComboBoxItem Content="Light" Tag="Light" />
+                        <ComboBoxItem Content="Dark" Tag="Dark" />
+                        <ComboBoxItem Content="Use system setting" Tag="Default" />
+                    </ComboBox>
+                </controls:SettingsCard>
+
+                <!--  Data filename  -->
+                <TextBlock
+                    x:Uid="Settings_DataFilename"
+                    Margin="0,5,0,5"
+                    Style="{ThemeResource SubtitleTextBlockStyle}"
+                    Text="Data Filename" />
+
+                <StackPanel Margin="{StaticResource XSmallTopMargin}" Orientation="Horizontal">
+                    <AppBarButton
+                        Command="{x:Bind ViewModel.SetDataFilenameCommand}"
+                        Icon="Document"
+                        IsEnabled="True"
+                        Label="Filename" />
+
+                    <TextBlock
+                        Margin="0,0,10,0"
+                        VerticalAlignment="Center"
+                        Style="{ThemeResource BodyTextBlockStyle}"
+                        Text="{x:Bind ViewModel.DataFilename, Mode=OneWay}" />
+
+                </StackPanel>
+
+                <!--  Python library  -->
+                <TextBlock
+                    x:Uid="Settings_PythonLibrary"
+                    Margin="0,5,0,5"
+                    Style="{ThemeResource SubtitleTextBlockStyle}"
+                    Text="Python Library" />
+
+                <StackPanel Margin="{StaticResource XSmallTopMargin}" Orientation="Horizontal">
+                    <AppBarButton
+                        Command="{x:Bind ViewModel.SetPythonLibraryCommand}"
+                        Icon="OpenFile"
+                        IsEnabled="True"
+                        Label="Filename" />
+
+                    <TextBlock
+                        Margin="0,0,10,0"
+                        VerticalAlignment="Center"
+                        Style="{ThemeResource BodyTextBlockStyle}"
+                        Text="{x:Bind ViewModel.PythonLibrary, Mode=OneWay}" />
+
+                </StackPanel>
+
+                <!--  About  -->
+                <TextBlock
+                    Margin="0,5,0,5"
+                    Style="{ThemeResource SubtitleTextBlockStyle}"
+                    Text="About" />
+
+                <controls:SettingsExpander Description="2024 Adam Gladstone." Header="Portfolio Manager">
+                    <controls:SettingsExpander.HeaderIcon>
+                        <BitmapIcon ShowAsMonochrome="False" UriSource="/Assets/WindowIcon.ico" />
+                    </controls:SettingsExpander.HeaderIcon>
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        IsTextSelectionEnabled="True"
+                        Text="{x:Bind Version}" />
+                    <controls:SettingsExpander.Items>
+                        <controls:SettingsCard Header="To clone this repository">
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                IsTextSelectionEnabled="True"
+                                Text="git clone https://github.com/Adam-Gladstone/PortfolioManager" />
+                        </controls:SettingsCard>
+                        <controls:SettingsCard
+                            x:Name="bugRequestCard"
+                            Click="BugRequestCard_Click"
+                            Header="File a bug or request a new feature"
+                            IsClickEnabled="True">
+                            <controls:SettingsCard.ActionIcon>
+                                <FontIcon Glyph="&#xE8A7;" />
+                            </controls:SettingsCard.ActionIcon>
+                        </controls:SettingsCard>
+                        <controls:SettingsCard
+                            HorizontalContentAlignment="Left"
+                            ContentAlignment="Vertical"
+                            Header="Dependencies &amp; references">
+                            <StackPanel Margin="-12,0,0,0" Orientation="Vertical">
+                                <HyperlinkButton Content="{x:Bind WinAppSdkRuntimeDetails}" NavigateUri="https://aka.ms/windowsappsdk" />
+                                <HyperlinkButton Content="Windows UI Library" NavigateUri="https://aka.ms/winui" />
+                                <HyperlinkButton Content="Windows Community Toolkit" NavigateUri="https://github.com/CommunityToolkit/Windows" />
+                                <HyperlinkButton Content="Application Icon" NavigateUri="https://icons8.com/icons" />
+                            </StackPanel>
+                        </controls:SettingsCard>
+                    </controls:SettingsExpander.Items>
+                </controls:SettingsExpander>
+
+            </StackPanel>
+
+        </ScrollViewer>
+
+    </Grid>
+</Page>
