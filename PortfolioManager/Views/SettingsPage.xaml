@@ -42,25 +42,24 @@
                     </ComboBox>
                 </controls:SettingsCard>
 
-                <!--  Data filename  -->
+                <!--  Database folder  -->
                 <TextBlock
-                    x:Uid="Settings_DataFilename"
-                    Margin="0,5,0,5"
+                    x:Uid="Settings_DatabaseFolder"
                     Style="{ThemeResource SubtitleTextBlockStyle}"
-                    Text="Data Filename" />
+                    Text="Database Folder" />
 
                 <StackPanel Margin="{StaticResource XSmallTopMargin}" Orientation="Horizontal">
                     <AppBarButton
-                        Command="{x:Bind ViewModel.SetDataFilenameCommand}"
-                        Icon="Document"
+                        Command="{x:Bind ViewModel.SetFolderCommand}"
+                        Icon="Folder"
                         IsEnabled="True"
-                        Label="Filename" />
+                        Label="Folder" />
 
                     <TextBlock
                         Margin="0,0,10,0"
                         VerticalAlignment="Center"
                         Style="{ThemeResource BodyTextBlockStyle}"
-                        Text="{x:Bind ViewModel.DataFilename, Mode=OneWay}" />
+                        Text="{x:Bind ViewModel.DatabaseFolder, Mode=OneWay}" />
 
                 </StackPanel>
 

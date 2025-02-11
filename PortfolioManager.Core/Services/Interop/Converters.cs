@@ -17,6 +17,18 @@ internal class Converters
         return pyDict;
     }
 
+    public static PyDict ConvertToPythonDictionary(List<TickerValue> tickerValues)
+    {
+        var pyDict = new PyDict();
+
+        foreach (var item in tickerValues)
+        {
+            pyDict[item.Ticker.ToString()] = item.Value.ToPython();
+        }
+
+        return pyDict;
+    }
+
     public static List<TickerWeight> ConvertTickerWeights(PyDict pyTickerWeights)
     {
         var tickerWeights = new List<TickerWeight>();

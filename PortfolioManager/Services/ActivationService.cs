@@ -14,7 +14,6 @@ public class ActivationService : IActivationService
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly IFolderSelectorService _folderSelectorService;
     private readonly IFileSelectorService _fileSelectorService;
-    private readonly IDataSelectorService _dataSelectorService;
 
     private UIElement? _shell = null;
 
@@ -23,15 +22,13 @@ public class ActivationService : IActivationService
         IEnumerable<IActivationHandler> activationHandlers, 
         IThemeSelectorService themeSelectorService,
         IFolderSelectorService folderSelectorService,
-        IFileSelectorService fileSelectorService,
-        IDataSelectorService dataSelectorService)
+        IFileSelectorService fileSelectorService)
     {
         _defaultHandler = defaultHandler;
         _activationHandlers = activationHandlers;
         _themeSelectorService = themeSelectorService;
         _folderSelectorService = folderSelectorService;
         _fileSelectorService = fileSelectorService;
-        _dataSelectorService = dataSelectorService;
     }
 
     public async Task ActivateAsync(object activationArgs)
@@ -78,8 +75,6 @@ public class ActivationService : IActivationService
         await _folderSelectorService.InitializeAsync().ConfigureAwait(false);
 
         await _fileSelectorService.InitializeAsync().ConfigureAwait(false);
-
-        await _dataSelectorService.InitializeAsync().ConfigureAwait(false);
 
         await Task.CompletedTask;
     }

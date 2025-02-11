@@ -168,4 +168,7 @@
   <data name="Settings_DataFilename" xml:space="preserve">
     <value>Data Filename</value>
   </data>
+  <data name="Shell_PortfolioItem.Content" xml:space="preserve">
+    <value>PortfolioItem</value>
+  </data>
 </root>

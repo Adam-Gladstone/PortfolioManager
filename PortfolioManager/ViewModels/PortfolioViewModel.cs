@@ -1,7 +1,5 @@
-﻿using System.Collections.ObjectModel;
-
+﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml.Controls;
 using PortfolioManager.Contracts.Services;
 using PortfolioManager.Contracts.ViewModels;
@@ -9,85 +7,140 @@ using PortfolioManager.Core.Contracts.Services;
 using PortfolioManager.Core.Models;
 using PortfolioManager.Core.Services;
 using PortfolioManager.Dialogs;
+using Windows.Storage;
 
 namespace PortfolioManager.ViewModels;
 
 public partial class PortfolioViewModel : ObservableRecipient, INavigationAware
 {
     private readonly INavigationService _navigationService;
-    private readonly IPortfolioItemService _portfolioItemService;
+    private readonly IDataService _dataService;
 
-    public ObservableCollection<PortfolioItem> Source { get; } = [];
+    [ObservableProperty]
+    private string filter = "";
 
-    public PortfolioViewModel(INavigationService navigationService, IPortfolioItemService portfolioItemService)
+    [ObservableProperty]
+    private PortfolioItem? selected;
+
+    public PortfolioViewModel(INavigationService navigationService, IDataService dataService)
     {
         _navigationService = navigationService;
-        _portfolioItemService = portfolioItemService;
+        _dataService = dataService;
 
         var settings = App.GetService<SettingsViewModel>();
 
-        if (!string.IsNullOrEmpty(settings.DataFilename))
+        if (!string.IsNullOrEmpty(settings.DatabaseFolder))
         {
-            if (File.Exists(settings.DataFilename))
+            var sqliteDataService = (SqliteDataService)_dataService;
+
+            if (Directory.Exists(settings.DatabaseFolder))
             {
-                ((PortfolioItemService)_portfolioItemService).Filename = settings.DataFilename;
-                _portfolioItemService.InitializeData();
+                sqliteDataService.DbPath = Path.Combine(settings.DatabaseFolder, sqliteDataService.DbFilename);
             }
             else
             {
-                throw new Exception($"The portfolio file {settings.DataFilename} does not exist.\nPlease check the settings.");
+                sqliteDataService.DbPath = Path.Combine(ApplicationData.Current.LocalFolder.Path, sqliteDataService.DbFilename);
             }
+
+            _dataService.InitializeDataAsync();
         }
     }
 
     public void OnNavigatedTo(object parameter)
     {
-        Source.Clear();
-
-        var data = _portfolioItemService.GetData();
-        foreach (var item in data)
-        {
-            Source.Add(item);
-        }
     }
 
     public void OnNavigatedFrom()
     {
     }
 
-    [RelayCommand]
-    private async Task OnItemClick(PortfolioItem? clickedItem)
+    public async Task<List<PortfolioItem>> GetDataAsync()
+    {
+        return (List<PortfolioItem>)await _dataService.GetItemsAsync();
+    }
+
+    public void AddPortfolioItem()
+    {
+        var portfolio = new PortfolioItem
+        {
+            Id = -1,
+            SymbolCode = 57808,   // &#xE1D0
+            SymbolName = "Calculator"
+        };
+
+        _navigationService.NavigateTo(typeof(PortfolioItemViewModel).FullName!, portfolio);
+    }
+
+    public void EditPortfolioItem()
+    {
+        if (Selected != null)
+        {
+            _navigationService.NavigateTo(typeof(PortfolioItemViewModel).FullName!, Selected);
+        }
+    }
+
+    public void DeletePortfolioItem()
+    {
+        try
+        {
+            if (Selected != null)
+            {
+                var id = _dataService.DeleteItemAsync(Selected).Result;
+                if (id != false)
+                {
+                    Debug.WriteLine($"Deleted item \'{Selected.Name}\' with id:{id}");
+                }
+                else
+                {
+                    throw new Exception($"Unable to delete the item \'{Selected.Name}\'.");
+                }
+            }
+        }
+        catch (Exception exc)
+        {
+            App.ReportException(exc);
+        }
+    }
+
+    public async void RunPortfolioAnalysis()
     {
         if (App.MainRoot == null) { return; }
 
-        if (clickedItem != null)
+        try
         {
-            var themeSelectorService = App.GetService<IThemeSelectorService>();
-
-            PortfolioAnalysisParamsDialog portfolioAnalysisParamsDialog = new();
-            ContentDialog dialog = new()
+            if (Selected != null)
             {
-                XamlRoot = App.MainRoot.XamlRoot,
-                RequestedTheme = themeSelectorService.Theme,
-                Title = "Portfolio Analysis Parameters",
-                PrimaryButtonText = "OK",
-                IsPrimaryButtonEnabled = false,
-                CloseButtonText = "Cancel",
-                DefaultButton = ContentDialogButton.Primary,
-                Content = portfolioAnalysisParamsDialog
-            };
+                var themeSelectorService = App.GetService<IThemeSelectorService>();
 
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary)
-            {
-                clickedItem.Benchmark = portfolioAnalysisParamsDialog.Benchmark;
-                clickedItem.Start = PortfolioAnalysisParamsDialog.ConvertFromDateTimeOffset(portfolioAnalysisParamsDialog.StartDateOffset);
-                clickedItem.End = PortfolioAnalysisParamsDialog.ConvertFromDateTimeOffset(portfolioAnalysisParamsDialog.EndDateOffset);
-                clickedItem.RiskFreeRate = System.Convert.ToDouble(portfolioAnalysisParamsDialog.RiskFreeRate);
+                PortfolioAnalysisParamsDialog portfolioAnalysisParamsDialog = new();
+                ContentDialog dialog = new()
+                {
+                    XamlRoot = App.MainRoot.XamlRoot,
+                    RequestedTheme = themeSelectorService.Theme,
+                    Title = "Portfolio Analysis Parameters",
+                    PrimaryButtonText = "OK",
+                    IsPrimaryButtonEnabled = false,
+                    CloseButtonText = "Cancel",
+                    DefaultButton = ContentDialogButton.Primary,
+                    Content = portfolioAnalysisParamsDialog
+                };
 
-                _navigationService.SetListDataItemForNextConnectedAnimation(clickedItem);
-                _navigationService.NavigateTo(typeof(PortfolioDetailViewModel).FullName!, clickedItem);
+                var result = await dialog.ShowAsync();
+                if (result == ContentDialogResult.Primary)
+                {
+                    Selected.Benchmark = portfolioAnalysisParamsDialog.Benchmark;
+                    Selected.Start = PortfolioAnalysisParamsDialog.ConvertFromDateTimeOffset(portfolioAnalysisParamsDialog.StartDateOffset);
+                    Selected.End = PortfolioAnalysisParamsDialog.ConvertFromDateTimeOffset(portfolioAnalysisParamsDialog.EndDateOffset);
+                    Selected.RiskFreeRate = System.Convert.ToDouble(portfolioAnalysisParamsDialog.RiskFreeRate);
+
+                    _navigationService.SetListDataItemForNextConnectedAnimation(Selected);
+                    _navigationService.NavigateTo(typeof(PortfolioDetailViewModel).FullName!, Selected);
+                }
             }
+        }
+        catch (Exception exc)
+        {
+            App.ReportException(exc);
         }
     }
 }

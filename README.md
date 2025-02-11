@@ -51,7 +51,7 @@ __PortfolioManager__ is a Windows desktop application that allows you to define 
 
 The purpose of the project is to experiment with and demonstrate how to use Python from a C# client in the context of a non-trivial application. 
 
-To do this, we use the Python.NET library (https://pythonnet.github.io/) in a C# (WinUI 3.0) application to execute a Python script. The Python script performs the financial portfolio analysis and returns results for both the portfolio and the benchmark. The interop layer takes the Python results (in terms of Python objects - dictionary, list, tuple etc - and Pandas Series and DataFrame's) and converts these to C# collections that can be used by OxyPlot to visualize the results in a series of graphs.
+To do this, we use the Python.NET library (https://pythonnet.github.io/) in a C# (WinUI 3.0) application to execute a Python script. The Python script performs the financial portfolio analysis and returns results for both the portfolio and the benchmark. The interop layer takes the Python results (in terms of Python objects - dictionary, list, tuple etc - and Pandas Series and DataFrame's) and converts these to C# collections that can be used by OxyPlot (https://oxyplot.github.io/) to visualize the results in a series of graphs.
 
 <a href="https://github.com/Adam-Gladstone/PortfolioManager">
   <img src="Images/PortfolioAnalysisResults.png" alt="Portfolio Analysis">
@@ -123,7 +123,7 @@ The solution consists of four projects:
 - PortfolioAnalysisApp: a command line application for testing basic communication with Python.NET
 - PortfolioManager: the main WinUI 3.0/C# application
 - PortfolioManager.Core: the core services: the database (currently unused) and the Python service
-- PortfolioManager.Tests.MSTest: a test project
+- PortfolioManager.Tests.MSTest: a test project for unit testing the database service
 
 ### Prerequisites
 
@@ -139,13 +139,21 @@ Build and start the application for the first time. You will be presented with a
   <img src="Images/EmptyPortfolioScreen.png" alt="Startup Screen with portfolio defined">
 </a>
 
-The first thing to do is setup the application. This means 
-1) create/edit the list of portfolios (see below)
-2) set the path to the portfolio file
-3) set the path to the Python library module (python312.dll)
+The first thing to do is setup the application. Go to the settings page>
+1) Set the path to the portfolio database
+2) Set the path to the Python library module (python312.dll)
 Also you can choose the theme, or leave the default.
 
-The portfolio is a .csv file (at the moment) with the following structure:
+The next step is to create a portfolio.
+1) Press the Add button and you will be taken to a Portfolio Details screen:
+
+<a href="https://github.com/Adam-Gladstone/PortfolioManager">
+  <img src="Images/PortfolioDetailsScreen.png" alt="Portfolio details screen">
+</a>
+
+Fill in the portfolio name and a type (e.g. Equity).
+Click on the Add Ticker Value button to add tickers and amounts to the portfolio. 
+For example:
 
 ```
 PortfolioName	Ticker	Value
@@ -155,16 +163,25 @@ Portfolio1	ITX.MC	250.0
 Portfolio1	MEL.MC	2000.0
 ```
 
-Save this file to the application \Data directory and in the settings page set the filename here.
-Also set the filename of the python dll. Mine is located at: "C:/Users/.../AppData/Local/Programs/Python/Python312/python312.dll"
+Note that the amounts are to be interpreted as the number of shares multiplied by the price.
 
 <a href="https://github.com/Adam-Gladstone/PortfolioManager">
-  <img src="Images/PortfolioAnalysisSettings.png" alt="Portfolio Analysis Settings">
+  <img src="Images/AddTickerValue.png" alt="Portfolio details adding a ticker value">
 </a>
-<p></p>
-Return to the main Portfolio page. If everything is correct, the Portfolio page shows the portfolio you have just set up.
 
-Click on the Portfolio. The Portfolio Analysis Params dialog box is shown. Accept the defaults or fill in the benchmark, start and end date for the analysis and risk free rate. Note that you cannot run the analysis without a benchmark or risk free rate. Also note that if the dates are set to non-working days, price data will not be available an an exception will be returned from yfinance.
+Once the portfolio is fully defined, press the Save button to return to the Portfolio page. The completed portfolio should look as follows:
+
+<a href="https://github.com/Adam-Gladstone/PortfolioManager">
+  <img src="Images/CompletePortfolio.png" alt="Completed Portfolio">
+</a>
+
+<p></p>
+
+Double-clicking on the Portfolio will return you to the Portfolio Details editing page.
+
+Now, with the Portfolio1 selected, click the 'Run' button to perform the portfolio analysis.
+
+The Portfolio Analysis Params dialog box is shown. Accept the defaults or fill in the benchmark, start and end date for the analysis and risk free rate. Note that you cannot run the analysis without a benchmark or risk free rate. Also note that if the dates are set to non-working days, price data will not be available an an exception will be returned from yfinance.
 
 Press OK. After some moments the Portfolio Details page is displayed with the results of the analysis.
 <p></p>
@@ -176,6 +193,14 @@ Press OK. After some moments the Portfolio Details page is displayed with the re
   <img src="Images/PortfolioAnalysisResults.png" alt="Portfolio Analysis Results">
 </a>
 <p></p>
+
+The analysis displays the following graphs:
+- Portfolio Allocation: the percentage of each asset.
+- Historical Performance Assets: the historic returns of the assets over input the date range.
+- Risk vs. Reward: the %ag return for the %age volatility.
+- The Sharpe Ratio for each asset.
+- The historical performance of the Portfolio vs. the Benchmark.
+- The Portfolio Risk vs. Reward.
 
 From here you can go back and perform further analyses or add a new portfolio.
 

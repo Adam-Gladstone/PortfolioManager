@@ -70,6 +70,7 @@
 
                     <oxyplot:PlotView
                         Grid.Row="1"
+                        Margin="10,10,10,10"
                         Background="Transparent"
                         Model="{x:Bind ViewModel.PortfolioWeightsModel}" />
 

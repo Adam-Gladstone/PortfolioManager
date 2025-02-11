@@ -3,6 +3,20 @@ using Dapper.Contrib.Extensions;
 
 namespace PortfolioManager.Core.Models;
 
+public class TickerValue
+{
+    public string Ticker
+    {
+        get; set;
+    }
+
+    public double Value
+    {
+        get; set;
+    }
+}
+
+
 public class TickerWeight
 {
     public string Ticker 
@@ -18,6 +32,9 @@ public class TickerWeight
 
 public partial class PortfolioItem : ObservableObject
 {
+    ///////////////////////////////////////////////////////////////////////////
+    // Static data describing a portfolio
+
     [Key]
     public int Id
     {
@@ -46,6 +63,13 @@ public partial class PortfolioItem : ObservableObject
 
     public char Symbol => (char)SymbolCode;
 
+    public Dictionary<string, double> TickerValues { get; set; } = [];
+
+    public string Components => string.Join(", ", TickerValues.Keys);
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Parameters acquired for the selected portfolio just prior to the analysis
+
     public string Benchmark 
     { 
         get; set; 
@@ -66,10 +90,9 @@ public partial class PortfolioItem : ObservableObject
         get; set; 
     }
 
-    public Dictionary<string, double> TickerValues 
-    { 
-        get; set; 
-    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Data returned after performing the analysis
 
     public List<TickerWeight> TickerWeights 
     { 

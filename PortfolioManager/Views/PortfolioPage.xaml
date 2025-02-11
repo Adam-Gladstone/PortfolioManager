@@ -6,54 +6,183 @@
     xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:PortfolioManager.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:PortfolioManager.Core.Models"
     mc:Ignorable="d">
 
     <Grid x:Name="ContentArea">
 
-        <!--  Presents items in a evenly-spaced set of columns to fill the total available display space  -->
-        <controls:AdaptiveGridView
-            animations:Connected.ListItemElementName="itemThumbnail"
-            animations:Connected.ListItemKey="animationKeyContentGrid"
-            DesiredWidth="180"
-            IsItemClickEnabled="True"
-            ItemClickCommand="{x:Bind ViewModel.ItemClickCommand}"
-            ItemHeight="160"
-            ItemsSource="{x:Bind ViewModel.Source, Mode=OneWay}"
-            SelectionMode="None"
-            StretchContentForSingleRow="False">
+        <!--  Grid: 1 column, 2 rows: Grid (containing the query box and command bar), ListView  -->
+        <Grid
+            Margin="0,0,0,80"
+            ColumnSpacing="0"
+            RowSpacing="0">
 
-            <controls:AdaptiveGridView.ItemTemplate>
+            <Grid.Resources>
+                <CollectionViewSource x:Name="PortfolioCVS" IsSourceGrouped="true" />
+            </Grid.Resources>
 
-                <DataTemplate x:DataType="models:PortfolioItem">
+            <!--  One column  -->
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-                    <Grid x:Name="itemThumbnail" Padding="{StaticResource XSmallLeftTopRightBottomMargin}">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <!--  Three rows  -->
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+
+                <!--  Grid row 0 with 2 columns  -->
+                <Grid>
+                    <!--  Two columns  -->
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!--  AutoSuggest box for filtering and search  -->
+                    <AutoSuggestBox
+                        x:Name="SearchBox"
+                        Grid.Column="0"
+                        Margin="0,0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        QueryIcon="Find"
+                        QuerySubmitted="SearchBox_QuerySubmitted"
+                        TextChanged="SearchBox_TextChanged" />
+
+                    <!--  CommandBar  -->
+                    <CommandBar
+                        Grid.Column="1"
+                        HorizontalAlignment="Stretch"
+                        Background="Transparent"
+                        DefaultLabelPosition="Right"
+                        IsOpen="True">
+
+                        <AppBarSeparator />
+
+                        <AppBarButton
+                            x:Name="ButtonAdd"
+                            Click="ButtonAdd_Click"
+                            Icon="Add"
+                            IsEnabled="True"
+                            Label="Add" />
+
+                        <AppBarButton
+                            x:Name="ButtonEdit"
+                            Click="ButtonEdit_Click"
+                            Icon="Edit"
+                            IsEnabled="True"
+                            Label="Edit" />
+
+                        <AppBarButton
+                            x:Name="ButtonDelete"
+                            Click="ButtonDelete_Click"
+                            Icon="Delete"
+                            IsEnabled="True"
+                            Label="Delete" />
+
+                        <AppBarSeparator />
+
+                        <AppBarButton
+                            x:Name="ButtonRun"
+                            Click="ButtonRun_Click"
+                            Icon="Play"
+                            IsEnabled="True"
+                            Label="Run" />
+
+                    </CommandBar>
+
+                </Grid>
+
+            </Grid>
+
+            <!--  ListView  -->
+            <ListView
+                x:Name="ListView"
+                Grid.Row="1"
+                DoubleTapped="ListView_DoubleTapped"
+                ItemsSource="{x:Bind PortfolioCVS.View, Mode=OneWay}"
+                SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
+                SelectionChanged="ListView_SelectionChanged"
+                SelectionMode="Single"
+                ShowsScrollingPlaceholders="True">
+
+                <!--  ListView ItemsPanel  -->
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <!--  Retain the group header when scrolling down in the list  -->
+                        <ItemsStackPanel AreStickyGroupHeadersEnabled="True" />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+
+                <!--  ListView GroupStyle  -->
+                <ListView.GroupStyle>
+                    <GroupStyle>
+                        <GroupStyle.HeaderTemplate>
+
+                            <DataTemplate x:DataType="local:GroupedList">
+                                <Border AutomationProperties.AccessibilityView="Raw">
+                                    <TextBlock
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        Style="{ThemeResource TitleTextBlockStyle}"
+                                        Text="{x:Bind Key}" />
+                                </Border>
+                            </DataTemplate>
+
+                        </GroupStyle.HeaderTemplate>
+                    </GroupStyle>
+                </ListView.GroupStyle>
+
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="models:PortfolioItem">
+
+                        <Grid IsHitTestVisible="False">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
 
                             <FontIcon AutomationProperties.Name="{x:Bind SymbolName}" Glyph="{x:Bind Symbol}" />
+                            
+                            <TextBlock
+                                Grid.Column="1"
+                                Margin="10,0,15,0"
+                                HorizontalAlignment="Left"
+                                FontSize="15"
+                                Style="{ThemeResource BodyTextBlockStyle}"
+                                Text="{x:Bind Path=Name}" />
 
                             <TextBlock
-                                Margin="{StaticResource XXSmallTopMargin}"
-                                HorizontalAlignment="Center"
-                                Style="{ThemeResource BodyTextStyle}"
-                                Text="{x:Bind sys:String.Format('ID: {0}', Name)}" />
+                                Grid.Column="2"
+                                Margin="10,0,15,0"
+                                HorizontalAlignment="Left"
+                                FontSize="15"
+                                Style="{ThemeResource BodyTextBlockStyle}"
+                                Text="{x:Bind Path=Type}" />
 
                             <TextBlock
-                                Margin="{StaticResource XXSmallTopMargin}"
-                                HorizontalAlignment="Center"
-                                Style="{ThemeResource BodyTextStyle}"
-                                Text="{x:Bind sys:String.Format('Type: {0}', Type)}" />
+                                Grid.Column="3"
+                                Margin="10,0,15,0"
+                                HorizontalAlignment="Right"
+                                FontSize="12"
+                                Style="{ThemeResource BodyTextBlockStyle}"
+                                Text="{x:Bind Path=Components}" />
 
-                        </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
 
-                    </Grid>
+            </ListView>
 
-                </DataTemplate>
-
-            </controls:AdaptiveGridView.ItemTemplate>
-
-        </controls:AdaptiveGridView>
+        </Grid>
 
     </Grid>
 

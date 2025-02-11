@@ -36,3 +36,12 @@ The support is divided into two areas of responsibility:
 
 ## 16/01/2025
 Initial checkin.
+
+## 07/02/2025
+- Add support for an sqlite database instead of csv file.
+- Enhance database support to include add, edit, delete operations
+- Refactor the UI to add portfolio item details and ticker values
+
+
+
+

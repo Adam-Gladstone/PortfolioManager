@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
@@ -13,8 +14,8 @@ using PortfolioManager.Models;
 using PortfolioManager.Services;
 using PortfolioManager.ViewModels;
 using PortfolioManager.Views;
-using WASDK = Microsoft.WindowsAppSDK;
 
+using WASDK = Microsoft.WindowsAppSDK;
 
 namespace PortfolioManager;
 
@@ -64,7 +65,6 @@ public partial class App : Application
             services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
             services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
             services.AddSingleton<IFolderSelectorService, FolderSelectorService>();
-            services.AddSingleton<IDataSelectorService, DataSelectorService>();
             services.AddSingleton<IFileSelectorService, PythonLibrarySelectorService>();
 
             services.AddTransient<INavigationViewService, NavigationViewService>();
@@ -76,10 +76,11 @@ public partial class App : Application
             // Core Services
             services.AddSingleton<IDataService, SqliteDataService>();
             services.AddSingleton<IPythonService, PythonService>();
-            services.AddSingleton<IPortfolioItemService, PortfolioItemService>();
             services.AddSingleton<IFileService, FileService>();
 
             // Views and ViewModels
+            services.AddTransient<PortfolioItemViewModel>();
+            services.AddTransient<PortfolioItemPage>();
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<SettingsPage>();
 

@@ -1,38 +1,37 @@
 ﻿using Microsoft.UI.Xaml;
 using OxyPlot;
 
-namespace PortfolioManager.Services.Theming
+namespace PortfolioManager.Services.Theming;
+
+internal static class PlotModelExtensions
 {
-    internal static class PlotModelExtensions
+    public static void ApplyTheme(this PlotModel plotModel, ElementTheme theme)
     {
-        public static void ApplyTheme(this PlotModel plotModel, ElementTheme theme)
+        // Beware: Do not use OxyColors.Black and OxyColors.White.
+        // Their cached brushes are reversed, based on the Theme. Confusing!
+
+        var foreground = theme == ElementTheme.Light ? OxyColor.FromRgb(32, 32, 32) : OxyColors.WhiteSmoke;
+
+        if (plotModel != null)
         {
-            // Beware: Do not use OxyColors.Black and OxyColors.White.
-            // Their cached brushes are reversed, based on the Theme. Confusing!
-
-            var foreground = theme == ElementTheme.Light ? OxyColor.FromRgb(32, 32, 32) : OxyColors.WhiteSmoke;
-
-            if (plotModel != null)
+            if (plotModel.TextColor != OxyColors.Transparent)
             {
-                if (plotModel.TextColor != OxyColors.Transparent)
-                {
-                    plotModel.TextColor = foreground;
-                }
-
-                foreach (var axis in plotModel.Axes)
-                {
-                    if (axis.TicklineColor != OxyColors.Transparent)
-                    {
-                        axis.TicklineColor = foreground;
-                    }
-                    if (axis.AxislineColor != OxyColors.Transparent)
-                    {
-                        axis.AxislineColor = foreground;
-                    }
-                }
-
-                plotModel.InvalidatePlot(false);
+                plotModel.TextColor = foreground;
             }
+
+            foreach (var axis in plotModel.Axes)
+            {
+                if (axis.TicklineColor != OxyColors.Transparent)
+                {
+                    axis.TicklineColor = foreground;
+                }
+                if (axis.AxislineColor != OxyColors.Transparent)
+                {
+                    axis.AxislineColor = foreground;
+                }
+            }
+
+            plotModel.InvalidatePlot(false);
         }
     }
 }

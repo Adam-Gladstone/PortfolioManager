@@ -20,6 +20,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Dialogs\PortfolioAnalysisParamsDialog.xaml" />
+    <None Remove="Dialogs\TickerValueDialog.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
@@ -44,6 +45,9 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="Dialogs\TickerValueDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Dialogs\PortfolioAnalysisParamsDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -17,7 +17,7 @@ public partial class SettingsViewModel : ObservableRecipient
 {
     private readonly IThemeSelectorService _themeSelectorService;
 
-    private readonly IDataSelectorService _dataSelectorService;
+    private readonly IFolderSelectorService _folderSelectorService;
 
     private readonly IFileSelectorService _pythonLibrarySelectorService;
 
@@ -28,12 +28,12 @@ public partial class SettingsViewModel : ObservableRecipient
     private string _versionDescription;
 
     [ObservableProperty]
-    private string _dataFilename;
+    private string _databaseFolder;
 
     [ObservableProperty]
     private string _pythonLibrary;
 
-    public RelayCommand SetDataFilenameCommand
+    public RelayCommand SetFolderCommand
     {
         get; set;
     }
@@ -51,11 +51,11 @@ public partial class SettingsViewModel : ObservableRecipient
     public SettingsViewModel(
         IThemeSelectorService themeSelectorService, 
         IFileSelectorService fileSelectorService,
-        IDataSelectorService dataSelectorService)
+        IFolderSelectorService folderSelectorService)
     {
         _themeSelectorService = themeSelectorService;
         _pythonLibrarySelectorService = fileSelectorService;
-        _dataSelectorService = dataSelectorService;
+        _folderSelectorService = folderSelectorService;
 
         _elementTheme = _themeSelectorService.Theme;
         _versionDescription = GetVersionDescription();
@@ -70,11 +70,11 @@ public partial class SettingsViewModel : ObservableRecipient
                 }
             });
 
-        SetDataFilenameCommand = new RelayCommand(SetDataFilename);
+        SetFolderCommand = new RelayCommand(SetFolder);
 
         SetPythonLibraryCommand = new RelayCommand(SetPythonLibrary);
 
-        _dataFilename = _dataSelectorService.Filename;
+        _databaseFolder = _folderSelectorService.Folder;
         _pythonLibrary = _pythonLibrarySelectorService.Filename;
     }
 
@@ -122,24 +122,25 @@ public partial class SettingsViewModel : ObservableRecipient
         }
     }
 
-    private async void SetDataFilename()
+    private async void SetFolder()
     {
         try
         {
-            FileOpenPicker picker = new();
+            FolderPicker picker = new();
 
             InitializePicker(picker);
 
             picker.ViewMode = PickerViewMode.List;
             picker.SuggestedStartLocation = PickerLocationId.ComputerFolder;
-            picker.FileTypeFilter.Add(".csv");
+            picker.CommitButtonText = "Select this folder";
 
-            var file = await picker.PickSingleFileAsync();
-            if (file != null)
+            var folderItem = await picker.PickSingleFolderAsync();
+            if (folderItem != null)
             {
-                DataFilename = file.Path;
+                DatabaseFolder = folderItem.Path;
 
-                await _dataSelectorService.SetFilenameAsync(file.Path);
+                var folderSelectorService = App.GetService<IFolderSelectorService>();
+                await folderSelectorService.SetFolderAsync(folderItem.Path);
             }
         }
         catch (Exception ex)

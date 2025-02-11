@@ -10,7 +10,6 @@ namespace PortfolioManager.ViewModels;
 
 public partial class PortfolioDetailViewModel : ObservableRecipient, INavigationAware
 {
-    private readonly IPortfolioItemService _portfolioItemService;
     private readonly IPythonService _pythonService;
 
     [ObservableProperty]
@@ -35,9 +34,8 @@ public partial class PortfolioDetailViewModel : ObservableRecipient, INavigation
     private PlotModel comparativeRiskRewardModel;
 
 
-    public PortfolioDetailViewModel(IPortfolioItemService portfolioItemService, IPythonService pythonService)
+    public PortfolioDetailViewModel(IPythonService pythonService)
     {
-        _portfolioItemService = portfolioItemService;
         _pythonService = pythonService;
 
         var settings = App.GetService<SettingsViewModel>();
