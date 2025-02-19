@@ -1,6 +1,15 @@
 """
 portfolio_analysis.py
 
+This script is based on: 'Building an Investment Portfolio Management App with Python' by Luís Fernando Torres
+(https://medium.com/python-in-plain-english/building-an-investment-portfolio-management-app-with-python-a68c2841f04b)
+
+It has been refactored in order to separate the analysis (and calculations) functions from 
+the presentation of the results (graphs) in a jupyter notebook (portfolio_analysis.ipynb).
+The portfolio_analysis.py functions are used in the PortfolioManager (C#/WinUI) application.
+
+[X] flake8  - E501 line too long (multiple)
+[X] black   - passed
 """
 
 # Pandas & NumPy
@@ -31,10 +40,13 @@ def benchmark_returns(benchmark: str, start_date: str, end_date: str) -> dict:
     return results
 
 
-def portfolio_returns(
-        ticker_values: dict, start_date: str, end_date: str
-) -> dict:
-
+def portfolio_returns(ticker_values: dict, start_date: str, end_date: str) -> dict:
+    """
+    Returns:
+        "weights" (ticker_weights),
+        "data" (dataframe),
+        "portfolio returns" (returns)
+    """
     # Obtaining tickers data with yfinance
     df: pd.DataFrame = yf.download(
         tickers=list(ticker_values.keys()), start=start_date, end=end_date
@@ -73,8 +85,7 @@ def portfolio_returns(
 
     # Calculating the weights for each security in the portfolio
     ticker_weights = {
-        ticker: value / total_portfolio_value for ticker,
-        value in ticker_values.items()
+        ticker: value / total_portfolio_value for ticker, value in ticker_values.items()
     }
 
     # Checking if dataframe has MultiIndex columns
@@ -99,11 +110,7 @@ def portfolio_returns(
         )  # Obtaining 'Adjusted Close'. If not available, use 'Close'
         port_returns = df.pct_change()  # Computing returns without weights
 
-    results = {
-        "weights": ticker_weights, 
-        "data": df, 
-        "portfolio returns": port_returns
-        }
+    results = {"weights": ticker_weights, "data": df, "portfolio returns": port_returns}
 
     return results
 
@@ -168,6 +175,9 @@ def perform_portfolio_analysis(
         respective weights (float)in the portfolio.
 
     Returns:
+        "individual cumulative returns" (individual_cumsum),
+        "individual volatility" (individual_vol),
+        "individual Sharpe ratio"  (individual_sharpe),
 
     Notes:
     """
@@ -184,11 +194,11 @@ def perform_portfolio_analysis(
             individual_returns = df[
                 ticker
             ].pct_change()  # Computing individual daily returns for each ticker
-            
+
             individual_cumsum[ticker] = (
                 (1 + individual_returns).cumprod() - 1
             ) * 100  # Computing cumulative returns over the period for each ticker
-            
+
             vol = (
                 individual_returns.std() * np.sqrt(252)
             ) * 100  # Computing annualized volatility
@@ -212,6 +222,7 @@ def perform_portfolio_analysis(
     }
 
     return results
+
 
 """
 tickers = {
