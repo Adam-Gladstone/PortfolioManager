@@ -16,28 +16,12 @@ The portfolio_analysis.py functions are used in the PortfolioManager (C#/WinUI) 
 import pandas as pd
 import numpy as np
 
-# Yfinance to retrieve financial data
+# yfinance to retrieve financial data
 import yfinance as yf
 
 import warnings
 
 warnings.filterwarnings("ignore")
-
-
-def benchmark_returns(benchmark: str, start_date: str, end_date: str) -> dict:
-
-    # Obtain benchmark data with yfinance
-    benchmark_df = yf.download(benchmark, start=start_date, end=end_date)
-
-    # Obtain 'Adjusted Close'. If not available, use 'Close'.
-    benchmark_df = benchmark_df["Adj Close"].fillna(benchmark_df["Close"])
-
-    # Computing benchmark returns
-    benchmark_returns = benchmark_df.pct_change()
-
-    results = {"benchmark returns": benchmark_returns}
-
-    return results
 
 
 def portfolio_returns(ticker_values: dict, start_date: str, end_date: str) -> dict:
@@ -47,12 +31,12 @@ def portfolio_returns(ticker_values: dict, start_date: str, end_date: str) -> di
         "data" (dataframe),
         "portfolio returns" (returns)
     """
-    # Obtaining tickers data with yfinance
+    # Get ticker data with yfinance
     df: pd.DataFrame = yf.download(
         tickers=list(ticker_values.keys()), start=start_date, end=end_date
     )
 
-    # Checking if there is data available in the given date range
+    # Check if there is data available in the given date range
     if isinstance(df.columns, pd.MultiIndex):
         missing_data_tickers = []
         for ticker in ticker_values.keys():
@@ -80,23 +64,23 @@ def portfolio_returns(ticker_values: dict, start_date: str, end_date: str) -> di
             )
             return
 
-    # Calculating portfolio value
+    # Calculate the portfolio value
     total_portfolio_value = sum(ticker_values.values())
 
-    # Calculating the weights for each security in the portfolio
+    # Calculate the weights for each security in the portfolio
     ticker_weights = {
         ticker: value / total_portfolio_value for ticker, value in ticker_values.items()
     }
 
-    # Checking if dataframe has MultiIndex columns
+    # Check if dataframe has MultiIndex columns
     if isinstance(df.columns, pd.MultiIndex):
         df = df["Adj Close"].fillna(
             df["Close"]
         )  # If 'Adjusted Close' is not available, use 'Close'
 
-    # Checking if there are more than just one security in the portfolio
+    # Check if there is more than one security in the portfolio
     if len(ticker_weights) > 1:
-        weights = list(ticker_weights.values())  # Obtaining weights
+        weights = list(ticker_weights.values())  # Obtain weights
         weighted_returns = df.pct_change().mul(
             weights, axis=1
         )  # Computed weighted returns
@@ -107,57 +91,10 @@ def portfolio_returns(ticker_values: dict, start_date: str, end_date: str) -> di
     else:
         df = df["Adj Close"].fillna(
             df["Close"]
-        )  # Obtaining 'Adjusted Close'. If not available, use 'Close'
+        )  # Obtain 'Adjusted Close'. If not available, use 'Close'
         port_returns = df.pct_change()  # Computing returns without weights
 
     results = {"weights": ticker_weights, "data": df, "portfolio returns": port_returns}
-
-    return results
-
-
-def portfolio_vs_benchmark(
-    port_returns: pd.Series, benchmark_returns: pd.Series, risk_free_rate: float
-) -> dict:
-    """
-    This function calculates and displays the cumulative returns, annualized volatility, and Sharpe Ratios
-    for both the portfolio and the benchmark. It provides a side-by-side comparison to assess the portfolio's
-    performance relative to the benchmark.
-
-    Parameters:
-    - port_returns (pd.Series): A Pandas Series containing the daily returns of the portfolio.
-    - benchmark_returns (pd.Series): A Pandas Series containing the daily returns of the benchmark.
-
-    Returns:
-    """
-
-    # Computing the cumulative returns for the portfolio and the benchmark
-    portfolio_cumsum = (((1 + port_returns).cumprod() - 1) * 100).round(2)
-    benchmark_cumsum = (((1 + benchmark_returns).cumprod() - 1) * 100).round(2)
-
-    # Computing the annualized volatility for the portfolio and the benchmark
-    port_vol = ((port_returns.std() * np.sqrt(252)) * 100).round(2)
-    benchmark_vol = ((benchmark_returns.std() * np.sqrt(252)) * 100).round(2)
-
-    # Computing Sharpe Ratio for the portfolio and the benchmark
-    excess_port_returns = port_returns - risk_free_rate / 252
-    port_sharpe = (
-        excess_port_returns.mean() / port_returns.std() * np.sqrt(252)
-    ).round(2)
-    excess_benchmark_returns = benchmark_returns - risk_free_rate / 252
-    benchmark_sharpe = (
-        excess_benchmark_returns.mean() / benchmark_returns.std() * np.sqrt(252)
-    ).round(2)
-
-    results = {
-        "portfolio cumulative returns": portfolio_cumsum,
-        "benchmark cumulative returns": benchmark_cumsum,
-        "portfolio volatility": port_vol,
-        "benchmark volatility": benchmark_vol,
-        "excess portfolio returns": excess_port_returns,
-        "portfolio sharpe ratio": port_sharpe,
-        "excess benchmark returns": excess_benchmark_returns,
-        "benchmark sharpe ratio": benchmark_sharpe,
-    }
 
     return results
 
@@ -182,38 +119,37 @@ def perform_portfolio_analysis(
     Notes:
     """
 
-    # Starting DataFrame and Series
+    # DataFrame and Series
     individual_cumsum = pd.DataFrame()
     individual_vol = pd.Series(dtype=float)
     individual_sharpe = pd.Series(dtype=float)
-    individual_cumprod = pd.Series(dtype=float)
 
-    # Iterating through tickers and weights in the tickers_weights dictionary
+    # Loop through tickers and weights in the tickers_weights dictionary
     for ticker, weight in ticker_weights.items():
-        if ticker in df.columns:  # Confirming that the tickers are available
+        if ticker in df.columns:  # Check that the tickers are available
             individual_returns = df[
                 ticker
-            ].pct_change()  # Computing individual daily returns for each ticker
+            ].pct_change()  # Compute individual daily returns for each ticker
 
             individual_cumsum[ticker] = (
                 (1 + individual_returns).cumprod() - 1
-            ) * 100  # Computing cumulative returns over the period for each ticker
+            ) * 100  # Compute cumulative returns over the period for each ticker
 
             vol = (
                 individual_returns.std() * np.sqrt(252)
-            ) * 100  # Computing annualized volatility
-            individual_vol[ticker] = vol  # Adding annualized volatility for each ticker
+            ) * 100  # Compute annualized volatility
+            individual_vol[ticker] = vol  # Add annualized volatility for each ticker
             individual_excess_returns = (
                 individual_returns - risk_free_rate / 252
-            )  # Computing the excess returns
+            )  # Compute the excess returns
             sharpe = (
                 individual_excess_returns.mean()
                 / individual_returns.std()
                 * np.sqrt(252)
             ).round(
                 2
-            )  # Computing Sharpe Ratio
-            individual_sharpe[ticker] = sharpe  # Adding Sharpe Ratio for each ticker
+            )  # Compute the Sharpe Ratio
+            individual_sharpe[ticker] = sharpe  # Add the Sharpe Ratio for each ticker
 
     results = {
         "individual cumulative returns": individual_cumsum,
@@ -222,6 +158,78 @@ def perform_portfolio_analysis(
     }
 
     return results
+
+
+def benchmark_returns(benchmark: str, start_date: str, end_date: str) -> dict:
+
+    # Obtain benchmark data with yfinance
+    benchmark_df = yf.download(benchmark, start=start_date, end=end_date)
+
+    # Obtain 'Adjusted Close'. If not available, use 'Close'.
+    benchmark_df = benchmark_df["Adj Close"].fillna(benchmark_df["Close"])
+
+    # Compute benchmark returns
+    benchmark_returns = benchmark_df.pct_change()
+
+    results = {"benchmark returns": benchmark_returns}
+
+    return results
+
+
+def portfolio_vs_benchmark(
+    port_returns: pd.Series, benchmark_returns: pd.Series, risk_free_rate: float
+) -> dict:
+    """
+    This function calculates and displays the cumulative returns, annualized volatility, and Sharpe Ratios
+    for both the portfolio and the benchmark. It provides a side-by-side comparison to assess the portfolio's
+    performance relative to the benchmark.
+
+    Parameters:
+    - port_returns (pd.Series): A Pandas Series containing the daily returns of the portfolio.
+    - benchmark_returns (pd.Series): A Pandas Series containing the daily returns of the benchmark.
+
+    Returns:
+        "portfolio cumulative returns": portfolio_cumsum,
+        "benchmark cumulative returns": benchmark_cumsum,
+        "portfolio volatility": port_vol,
+        "benchmark volatility": benchmark_vol,
+        "excess portfolio returns": excess_port_returns,
+        "portfolio sharpe ratio": port_sharpe,
+        "excess benchmark returns": excess_benchmark_returns,
+        "benchmark sharpe ratio": benchmark_sharpe,
+    """
+
+    # Compute the cumulative returns for the portfolio and the benchmark
+    portfolio_cumsum = (((1 + port_returns).cumprod() - 1) * 100).round(2)
+    benchmark_cumsum = (((1 + benchmark_returns).cumprod() - 1) * 100).round(2)
+
+    # Compute the annualized volatility for the portfolio and the benchmark
+    port_vol = ((port_returns.std() * np.sqrt(252)) * 100).round(2)
+    benchmark_vol = ((benchmark_returns.std() * np.sqrt(252)) * 100).round(2)
+
+    # Compute the Sharpe Ratio for the portfolio and the benchmark
+    excess_port_returns = port_returns - risk_free_rate / 252
+    port_sharpe = (
+        excess_port_returns.mean() / port_returns.std() * np.sqrt(252)
+    ).round(2)
+    excess_benchmark_returns = benchmark_returns - risk_free_rate / 252
+    benchmark_sharpe = (
+        excess_benchmark_returns.mean() / benchmark_returns.std() * np.sqrt(252)
+    ).round(2)
+
+    results = {
+        "portfolio cumulative returns": portfolio_cumsum,
+        "benchmark cumulative returns": benchmark_cumsum,
+        "portfolio volatility": port_vol,
+        "benchmark volatility": benchmark_vol,
+        "excess portfolio returns": excess_port_returns,
+        "portfolio sharpe ratio": port_sharpe,
+        "excess benchmark returns": excess_benchmark_returns,
+        "benchmark sharpe ratio": benchmark_sharpe,
+    }
+
+    return results
+
 
 
 """

@@ -122,7 +122,7 @@ The project can be downloaded from the GitHub repository in the usual way.
 The solution consists of four projects:
 - PortfolioAnalysisApp: a command line application for testing basic communication with Python.NET
 - PortfolioManager: the main WinUI 3.0/C# application
-- PortfolioManager.Core: the core services: the database (currently unused) and the Python service
+- PortfolioManager.Core: the core services: the database and the Python services
 - PortfolioManager.Tests.MSTest: a test project for unit testing the database service
 
 ### Prerequisites
