@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using PortfolioManager.Core.Models;
 using Python.Runtime;
 
@@ -151,7 +152,8 @@ internal class Converters
             for (var i = 0; i < index.Length(); i++)
             {
                 var x = DateTime.Parse(index[i].ToString());
-                var y = (double)values[i].AsManagedObject(typeof(double));
+
+                var y = (double)values[i][0].AsManagedObject(typeof(double));
 
                 observations.Add(new Tuple<DateTime, double>(x, y));
             }
@@ -162,7 +164,7 @@ internal class Converters
         return comparativeCumulativeReturns;
     }
 
-    public static Dictionary<string, Tuple<double, double>> ConvertComparativeVolatility(PyDict pyComparativeResults)
+    public static Dictionary<string, Tuple<double, double>> ConvertComparativeVolatility(string benchmark, PyDict pyComparativeResults)
     {
         var comparativeRiskReward = new Dictionary<string, Tuple<double, double>>();
 
@@ -192,8 +194,9 @@ internal class Converters
 
             var i = (int)index.Length() - 1;
 
-            var x = (double)pyBenchmarkAnnualizedVolatility.AsManagedObject(typeof(double));
-            var y = (double)returns[i].AsManagedObject(typeof(double));
+            var x = (double)pyBenchmarkAnnualizedVolatility[benchmark].AsManagedObject(typeof(double));
+
+            var y = (double)returns[i][0].AsManagedObject(typeof(double));
 
             var observation = new Tuple<double, double>(x, y);
 

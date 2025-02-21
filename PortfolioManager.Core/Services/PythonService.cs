@@ -120,9 +120,7 @@ public class PythonService : IPythonService
 
                 portfolio.ComparativeCumulativeReturns = Interop.Converters.ConvertComparativeCumulativeReturns(pyComparativeResults);
 
-                portfolio.PortfolioRiskReward = Interop.Converters.ConvertComparativeVolatility(pyComparativeResults);
-
-                // Portfolio Sharpe Ratio
+                portfolio.PortfolioRiskReward = Interop.Converters.ConvertComparativeVolatility(benchmark, pyComparativeResults);
             }
         }
         catch (Exception exc)

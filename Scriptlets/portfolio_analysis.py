@@ -33,7 +33,7 @@ def portfolio_returns(ticker_values: dict, start_date: str, end_date: str) -> di
     """
     # Get ticker data with yfinance
     df: pd.DataFrame = yf.download(
-        tickers=list(ticker_values.keys()), start=start_date, end=end_date
+        tickers=list(ticker_values.keys()), start=start_date, end=end_date, auto_adjust=False
     )
 
     # Check if there is data available in the given date range
@@ -163,7 +163,7 @@ def perform_portfolio_analysis(
 def benchmark_returns(benchmark: str, start_date: str, end_date: str) -> dict:
 
     # Obtain benchmark data with yfinance
-    benchmark_df = yf.download(benchmark, start=start_date, end=end_date)
+    benchmark_df = yf.download(benchmark, start=start_date, end=end_date, auto_adjust=False)
 
     # Obtain 'Adjusted Close'. If not available, use 'Close'.
     benchmark_df = benchmark_df["Adj Close"].fillna(benchmark_df["Close"])
@@ -231,27 +231,29 @@ def portfolio_vs_benchmark(
     return results
 
 
-
 """
 tickers = {
-    'SAN.MC' : (780 * 4.3015),
-    'BBVA.MC' : (326 * 8.8260),
-    'MAP.MC' : (1521 * 2.4420),
-    'REP.MC' : (230 * 11.7300),
-    'AENA.MC' : (17 * 203.2000)
+    'SAB.MC' : (1000.0),
+    'FER.MC' : (750.0),
+    'ITX.MC' : (250.0),
+    'MEL.MC' : (2000.0)
 }
 
-portfolio_results = portfolio_returns(tickers, '2019-11-28', '2024-11-28')
-benchmark_results = benchmark_returns('^IBEX', '2019-11-28', '2024-11-28')
+start: str = '2020-02-18'
+end: str = '2025-02-18'
+risk_free_rate: float = 0.0125
+
+portfolio_results = portfolio_returns(tickers, start, end)
+benchmark_results = benchmark_returns('^IBEX', start, end)
 
 port_returns = portfolio_results['portfolio returns']
 benchmark_returns = benchmark_results['benchmark returns']
 
-comparative_results = portfolio_vs_benchmark(port_returns, benchmark_returns, 0.01)
+comparative_results = portfolio_vs_benchmark(port_returns, benchmark_returns, risk_free_rate)
 print(comparative_results)
 
 df = portfolio_results['data']
 ticker_weights = portfolio_results['weights']
-analysis_results = perform_portfolio_analysis(df, ticker_weights, 0.01)
+analysis_results = perform_portfolio_analysis(df, ticker_weights, risk_free_rate)
 print(analysis_results)
 """
