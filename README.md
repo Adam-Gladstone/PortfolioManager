@@ -47,19 +47,24 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-__PortfolioManager__ is a Windows desktop application that allows you to define and analyse a portfolio of (equity) stocks. The analysis is centered on risk and return both within the portfolio and in comparison to a benchmark.
+__PortfolioManager__ is a Windows desktop application that allows you to define and analyse a portfolio of (equity) stocks. The analysis is centered on risk and return both within the portfolio and in comparison to a benchmark index.
 
-The purpose of the project is to experiment with and demonstrate how to use Python from a C# client in the context of a non-trivial application. 
+The purpose of the project is to experiment with and demonstrate how to use Python from a C# client in the context of a relatively non-trivial application.
 
-To do this, we use the Python.NET library (https://pythonnet.github.io/) in a C# (WinUI 3.0) application to execute a Python script. The Python script performs the financial portfolio analysis and returns results for both the portfolio and the benchmark. The interop layer takes the Python results (in terms of Python objects - dictionary, list, tuple etc - and Pandas Series and DataFrame's) and converts these to C# collections that can be used by OxyPlot (https://oxyplot.github.io/) to visualize the results in a series of graphs.
+To do this, we use the Python.NET library (https://pythonnet.github.io/) in a C# (WinUI 3.0) application to execute Python scripts. 
+There are currently two Python scripts:  [```portfolio_data.py```]() and [```portfolio_analysis.py```]().
+
+The ```portfolio_data.py``` script retrieves ticker data. The ```portfolio_analysis.py``` script performs analyses of portfolio and benchmark returns.
+
+The results are returned as Python objects and the interop layer takes the Python results (in terms of Python objects - dictionary, list, tuple etc - and Pandas Series and DataFrame's) and converts these to C# collections that can be used by OxyPlot (https://oxyplot.github.io/) to visualize the results in a series of graphs or as a table, depending on the function.
 
 <a href="https://github.com/Adam-Gladstone/PortfolioManager">
   <img src="Images/PortfolioAnalysisResults.png" alt="Portfolio Analysis">
 </a>
 
-Despite the name __PortfolioManager__, the main interest of the project is not financial portfolio analysis. The main interest is the arrangement of WinUI 3.0 for the UI (using the Community Toolkit and MVVM architecture), sitting on top of Python.NET, which in turn runs the portfolio analysis using a Python script.
+Despite the name __PortfolioManager__, the main interest of the project is not financial portfolio analysis. The main interest is the arrangement of WinUI 3.0 for the UI (using the Community Toolkit and MVVM architecture), sitting on top of Python.NET, which in turn runs the portfolio analyses using  Python scripts.
 
-__PortfolioManager__ is written in C# (.NET8.0) and uses WinUI and XAML for the user interface.
+__PortfolioManager__ is written in C# (.NET9.0) and uses WinUI and XAML for the user interface.
 
 __PortfolioManager__ demonstrates:
 - C#/WinUI and XAML for the UI
@@ -88,30 +93,24 @@ Apart from using the Community Toolkit for WinUI 3.0, we made use of the followi
 ### Built With
 
 * Visual Studio 2022
-* C# (.NET8.0)
+* C# (.NET9.0)
 
 The following packages are used:
-* CommunityToolkit.Mvvm Version="8.3.2"
-* CommunityToolkit.WinUI.Controls.Segmented Version="8.1.240916"
-* CommunityToolkit.WinUI.Controls.SettingsControls Version="8.1.240916"
-* CommunityToolkit.WinUI.UI.Animations Version="7.1.2"
-* CommunityToolkit.WinUI.UI.Controls Version="7.1.2"
-* CommunityToolkit.WinUI.UI.Controls.DataGrid Version="7.1.2"
+* CommunityToolkit.Mvvm Version="8.4.0"
+* CommunityToolkit.WinUI.Controls.Segmented Version="8.2.250402"
+* CommunityToolkit.WinUI.Controls.SettingsControls Version="8.2.250402"
+* CommunityToolkit.WinUI.UI.Animations Version="8.2.250402"
 * coverlet.collector Version="6.0.2"
 * H.OxyPlot.WinUI Version="0.9.30"
-* LiveChartsCore.SkiaSharpView.WinUI Version="2.0.0-rc1.2"
-* Dapper Version="2.1.35"
+* Dapper Version="2.1.66"
 * Dapper.Contrib Version="2.0.78"
-* Microsoft.Data.Sqlite Version="9.0.0"
-* Microsoft.Extensions.Hosting Version="9.0.0"
-* Microsoft.NET.Test.Sdk Version="17.12.0"
-* Microsoft.WindowsAppSDK Version="1.6.241114003"
-* Microsoft.Xaml.Behaviors.WinUI.Managed Version="2.0.9"
-* MSTest.TestAdapter Version="3.6.4"
-* MSTest.TestFramework Version="3.6.4"
-* Newtonsoft.Json Version="13.0.3"
-* WinUIEx Version="2.5.0"
-* System.Configuration.ConfigurationManager Version="9.0.0"
+* Microsoft.Data.Sqlite Version="10.0.0"
+* Microsoft.WindowsAppSDK Version="1.8.251106002"
+* Microsoft.Xaml.Behaviors.WinUI.Managed Version="3.0.0"
+* WinUI.TableView Version="1.3.4"
+* Newtonsoft.Json Version="13.0.4"
+* WinUIEx Version="2.9.0"
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -123,7 +122,7 @@ The solution consists of four projects:
 - PortfolioAnalysisApp: a command line application for testing basic communication with Python.NET
 - PortfolioManager: the main WinUI 3.0/C# application
 - PortfolioManager.Core: the core services: the database and the Python services
-- PortfolioManager.Tests.MSTest: a test project for unit testing the database service
+(- PortfolioManager.Tests.MSTest: a test project for unit testing the database service)
 
 ### Prerequisites
 
@@ -136,73 +135,101 @@ The solution consists of four projects:
 Build and start the application for the first time. You will be presented with an empty Portfolio screen. 
 
 <a href="https://github.com/Adam-Gladstone/PortfolioManager">
-  <img src="Images/EmptyPortfolioScreen.png" alt="Startup Screen with portfolio defined">
+  <img src="Images/EmptyPortfolioScreen.png" alt="Startup Screen with empty portfolio">
 </a>
 
-The first thing to do is setup the application. Go to the settings page>
-1) Set the path to the portfolio database
-2) Set the path to the Python library module (python312.dll)
-Also you can choose the theme, or leave the default.
+Under the __Portfolio__ title is a toolbar with the main functions available. The left-hand side contains a list of current portfolios - empty at the moment - which can be searched and filtered using the search box. On the right hand side we have facilities to Add, Edit, and Delete portfolios. In addition we can Run analyses, retrieve additional data and get a dividend calendar. These are described in a bit more detail below.
 
-The next step is to create a portfolio.
+Before jumping into setting up a portfolio it is important (critical) to setup the application. Go to the settings page:
+
+<a href="https://github.com/Adam-Gladstone/PortfolioManager">
+  <img src="Images/SettingsPage.png" alt="Startup Screen with empty portfolio">
+</a>
+
+The Settings page gives you the option of configuring the following:
+- App Theme - Dark/Light
+- Database Folder - the location of the PortfolioData.db file
+- Python Library - the location of the Python library (python312.dll)
+- Python Scripts Folder - the location of the scripts folder
+- Portfolio Analysis Defaults
+- Ticker Attrbiutes - the location of the list of ticker attributes
+
+So, set the path to the portfolio database. Then set the path to the Python library module (python312.dll) and the application scripts. Also you can choose the theme, or leave the default. Expand the Portfolio Analysis Defaults. 
+
+<a href="https://github.com/Adam-Gladstone/PortfolioManager">
+  <img src="Images/PortfolioAnalysisDefaults.png" alt="Portfolio analysis defaults screen">
+</a>
+
+Enter the data (risk free rate, benchmark index and start date offset). The start date offset is used to determine the start date from which to request historic prices.
+
+The Ticker Attributes contains a list of ticker attribute names supported by Yahoo Finance, and which can be requested. Of the 150 or so attributes, we specify only 6. This is the portfolio data returned from the Data menu.
+
+With this completed, we can proceed to create a portfolio.
 1) Press the Add button and you will be taken to a Portfolio Details screen:
 
 <a href="https://github.com/Adam-Gladstone/PortfolioManager">
   <img src="Images/PortfolioDetailsScreen.png" alt="Portfolio details screen">
 </a>
 
-Fill in the portfolio name and a type (e.g. Equity).
-Click on the Add Ticker Value button to add tickers and amounts to the portfolio. 
-For example:
-
-```
-PortfolioName	Ticker	Value
-Portfolio1	SAB.MC	1000.0
-Portfolio1	FER.MC	750.0
-Portfolio1	ITX.MC	250.0
-Portfolio1	MEL.MC	2000.0
-```
-
-Note that the amounts are to be interpreted as the number of shares multiplied by the price.
+Fill in the portfolio name and a type (e.g. Equity). Transactions can be added manually using the 'Add Transaction' button. This brings up a window that can be completed with the transaction details.
 
 <a href="https://github.com/Adam-Gladstone/PortfolioManager">
-  <img src="Images/AddTickerValue.png" alt="Portfolio details adding a ticker value">
+  <img src="Images/PortfolioItem_AddTransaction.png" alt="Portfolio Item Add transaction screen">
 </a>
 
-Once the portfolio is fully defined, press the Save button to return to the Portfolio page. The completed portfolio should look as follows:
+This works fine if you have a few transactions but soom becomes tedious. Instead, we can use the 'Import Transactions' function. This imports transactions from a.csv file. The transactions list the following:
+
+Date,Ticker,Buy/Sell,Amount,Price,Total
 
 <a href="https://github.com/Adam-Gladstone/PortfolioManager">
-  <img src="Images/CompletePortfolio.png" alt="Completed Portfolio">
+  <img src="Images/PortfolioItem_ImportTransactions.png" alt="Portfolio Item Import transactions screen">
 </a>
+
+After importing the transactions press the save button. This returns you to the main Portfolio page and the default Portfolio Allocation display.
+
+<a href="https://github.com/Adam-Gladstone/PortfolioManager">
+  <img src="Images/PortfolioAllocation.png" alt="Portfolio allocation screen">
+</a>
+
+Double-clicking on the Portfolio will return you to the Portfolio Details editing page. The portfolio can be edited and deleted in the usual way. Further portfolios can be added using the 'Add' menu.
 
 <p></p>
 
-Double-clicking on the Portfolio will return you to the Portfolio Details editing page.
+Now, with the Test portfolio selected, click the 'Run' button to perform the portfolio analysis.
 
-Now, with the Portfolio1 selected, click the 'Run' button to perform the portfolio analysis.
+The Portfolio Analysis Params dialog box is shown. 
 
-The Portfolio Analysis Params dialog box is shown. Accept the defaults or fill in the benchmark, start and end date for the analysis and risk free rate. Note that you cannot run the analysis without a benchmark or risk free rate. Also note that if the dates are set to non-working days, price data will not be available an an exception will be returned from yfinance.
-
-Press OK. After some moments the Portfolio Details page is displayed with the results of the analysis.
-<p></p>
 <a href="https://github.com/Adam-Gladstone/PortfolioManager">
   <img src="Images/PortfolioAnalysisParams.png" alt="Portfolio Analysis Parameters">
 </a>
-<p></p>
+
+Accept the defaults or fill in the benchmark, start and end date for the analysis and risk free rate. Note that you cannot run the analysis without a benchmark or risk free rate. Also note that if the dates are set to non-working days, price data will not be available and an exception will be returned from __yfinance__.
+
+Press OK. After some moments the Portfolio Details page is displayed with the results of the analysis.
+
 <a href="https://github.com/Adam-Gladstone/PortfolioManager">
   <img src="Images/PortfolioAnalysisResults.png" alt="Portfolio Analysis Results">
 </a>
-<p></p>
+
 
 The analysis displays the following graphs:
-- Portfolio Allocation: the percentage of each asset.
 - Historical Performance Assets: the historic returns of the assets over input the date range.
 - Risk vs. Reward: the %ag return for the %age volatility.
 - The Sharpe Ratio for each asset.
 - The historical performance of the Portfolio vs. the Benchmark.
 - The Portfolio Risk vs. Reward.
 
-From here you can go back and perform further analyses or add a new portfolio.
+After performing the analysis, return to the main Portfolio page. Press the 'Data' button. This will retrieve the ticker data for each of the tickers in the portfolio. The attributes that are returned depend on the attributes that have been enabled in the TickerAttributes.csv file.
+
+<a href="https://github.com/Adam-Gladstone/PortfolioManager">
+  <img src="Images/PortfolioDataDetails.png" alt="Portfolio Details screen">
+</a>
+
+Finally, return to the main Portfolio page and press the 'Calendar' button. The Portfolio Dividend Calendar is displayed for each of the tickers.
+
+<a href="https://github.com/Adam-Gladstone/PortfolioManager">
+  <img src="Images/PortfolioDividendCalendar.png" alt="Portfolio Dividend Calendar screen">
+</a>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

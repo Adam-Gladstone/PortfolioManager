@@ -29,9 +29,11 @@
 
                 <!--  App theme card  -->
                 <controls:SettingsCard Description="Select which app theme to display" Header="App theme">
+
                     <controls:SettingsCard.HeaderIcon>
                         <FontIcon Glyph="&#xE790;" />
                     </controls:SettingsCard.HeaderIcon>
+
                     <ComboBox
                         x:Name="themeMode"
                         AutomationProperties.AutomationId="themeModeComboBox"
@@ -40,6 +42,7 @@
                         <ComboBoxItem Content="Dark" Tag="Dark" />
                         <ComboBoxItem Content="Use system setting" Tag="Default" />
                     </ComboBox>
+
                 </controls:SettingsCard>
 
                 <!--  Database folder  -->
@@ -49,11 +52,12 @@
                     Text="Database Folder" />
 
                 <StackPanel Margin="{StaticResource XSmallTopMargin}" Orientation="Horizontal">
+
                     <AppBarButton
-                        Command="{x:Bind ViewModel.SetFolderCommand}"
+                        Command="{x:Bind ViewModel.SetDatabaseFolderCommand}"
                         Icon="Folder"
                         IsEnabled="True"
-                        Label="Folder" />
+                        Label="Database Folder" />
 
                     <TextBlock
                         Margin="0,0,10,0"
@@ -71,6 +75,7 @@
                     Text="Python Library" />
 
                 <StackPanel Margin="{StaticResource XSmallTopMargin}" Orientation="Horizontal">
+
                     <AppBarButton
                         Command="{x:Bind ViewModel.SetPythonLibraryCommand}"
                         Icon="OpenFile"
@@ -85,36 +90,140 @@
 
                 </StackPanel>
 
+                <!--  Python scripts folder  -->
+                <TextBlock
+                    x:Uid="Settings_ScriptFolder"
+                    Style="{ThemeResource SubtitleTextBlockStyle}"
+                    Text="Python Scripts Folder" />
+
+                <StackPanel Margin="{StaticResource XSmallTopMargin}" Orientation="Horizontal">
+
+                    <AppBarButton
+                        Command="{x:Bind ViewModel.SetScriptFolderCommand}"
+                        Icon="Folder"
+                        IsEnabled="True"
+                        Label="Script Folder" />
+
+                    <TextBlock
+                        Margin="0,0,10,0"
+                        VerticalAlignment="Center"
+                        Style="{ThemeResource BodyTextBlockStyle}"
+                        Text="{x:Bind ViewModel.ScriptFolder, Mode=OneWay}" />
+
+                </StackPanel>
+
+                <!--  Portfolio Analysis Defaults  -->
+                <TextBlock
+                    Margin="0,5,0,5"
+                    Style="{ThemeResource SubtitleTextBlockStyle}"
+                    Text="Portfolio Analysis Defaults" />
+
+                <controls:SettingsExpander Description="Default settings for the portfolio analysis functionality" Header="Portfolio Analysis Defaults">
+
+                    <!--  Icon  -->
+                    <controls:SettingsExpander.HeaderIcon>
+                        <BitmapIcon ShowAsMonochrome="False" UriSource="/Assets/PortfolioAnalysis.ico" />
+                    </controls:SettingsExpander.HeaderIcon>
+
+                    <controls:SettingsExpander.Items>
+
+                        <!--  Default Risk Free Rate  -->
+                        <controls:SettingsCard Description="The default risk free rate for the portfolio analysis." Header="Risk Free Rate">
+
+                            <TextBox Text="{x:Bind ViewModel.RiskFreeRate, Mode=TwoWay}" />
+                        
+                        </controls:SettingsCard>
+
+                        <!--  Default Benchmark Index  -->
+                        <controls:SettingsCard Description="The default benchmark index to use for portfolio analysis." Header="Benchmark Index">
+
+                            <TextBox Text="{x:Bind ViewModel.BenchmarkIndex, Mode=TwoWay}" />
+                        
+                        </controls:SettingsCard>                            
+
+                        <!--  Default Start Date Offset  -->
+                        <controls:SettingsCard Description="The default start date offset to use for portfolio analysis." Header="Start Date Offset">
+
+                            <ComboBox
+                                x:Name="defaultStartDateOffset"
+                                AutomationProperties.AutomationId="defaultStartDateOffsetComboBox"
+                                SelectionChanged="StartDateOffset_SelectionChanged">
+                                <ComboBoxItem Content="1y" Tag="1" />
+                                <ComboBoxItem Content="2y" Tag="2" />
+                                <ComboBoxItem Content="3y" Tag="3" />
+                                <ComboBoxItem Content="4y" Tag="4" />
+                                <ComboBoxItem Content="5y" Tag="5" />
+                            </ComboBox>
+
+                        </controls:SettingsCard>
+
+                    </controls:SettingsExpander.Items>
+
+                </controls:SettingsExpander>
+
+                <!--  Ticker Attributes Data  -->
+                <TextBlock
+                    x:Uid="Settings_TickerAttributes"
+                    Style="{ThemeResource SubtitleTextBlockStyle}"
+                    Text="Ticker Attributes" />
+
+                <StackPanel Margin="{StaticResource XSmallTopMargin}" Orientation="Horizontal">
+
+                    <AppBarButton
+                        Command="{x:Bind ViewModel.SetTickerAttributesCommand}"
+                        Icon="Bullets"
+                        IsEnabled="True"
+                        Label="Ticker Attributes" />
+
+                    <TextBlock
+                        Margin="0,0,10,0"
+                        VerticalAlignment="Center"
+                        Style="{ThemeResource BodyTextBlockStyle}"
+                        Text="{x:Bind ViewModel.TickerAttributes, Mode=OneWay}" />
+
+                </StackPanel>
+
                 <!--  About  -->
                 <TextBlock
                     Margin="0,5,0,5"
                     Style="{ThemeResource SubtitleTextBlockStyle}"
                     Text="About" />
 
-                <controls:SettingsExpander Description="2024 Adam Gladstone." Header="Portfolio Manager">
+                <controls:SettingsExpander Description="2025 Adam Gladstone." Header="Portfolio Manager">
+
+                    <!--  Icon  -->
                     <controls:SettingsExpander.HeaderIcon>
                         <BitmapIcon ShowAsMonochrome="False" UriSource="/Assets/WindowIcon.ico" />
                     </controls:SettingsExpander.HeaderIcon>
+
+                    <!--  Version  -->
                     <TextBlock
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         IsTextSelectionEnabled="True"
                         Text="{x:Bind Version}" />
+
                     <controls:SettingsExpander.Items>
+
+                        <!--  Clone settings card  -->
                         <controls:SettingsCard Header="To clone this repository">
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 IsTextSelectionEnabled="True"
                                 Text="git clone https://github.com/Adam-Gladstone/PortfolioManager" />
                         </controls:SettingsCard>
+
+                        <!--  Bug request settings card  -->
                         <controls:SettingsCard
                             x:Name="bugRequestCard"
-                            Click="BugRequestCard_Click"
+                            Command="{x:Bind ViewModel.BugRequestCommand}"
                             Header="File a bug or request a new feature"
                             IsClickEnabled="True">
                             <controls:SettingsCard.ActionIcon>
                                 <FontIcon Glyph="&#xE8A7;" />
                             </controls:SettingsCard.ActionIcon>
                         </controls:SettingsCard>
+
+                        <!--  Dependencies settings card  -->
                         <controls:SettingsCard
                             HorizontalContentAlignment="Left"
                             ContentAlignment="Vertical"
@@ -126,7 +235,9 @@
                                 <HyperlinkButton Content="Application Icon" NavigateUri="https://icons8.com/icons" />
                             </StackPanel>
                         </controls:SettingsCard>
+
                     </controls:SettingsExpander.Items>
+
                 </controls:SettingsExpander>
 
             </StackPanel>
@@ -134,4 +245,5 @@
         </ScrollViewer>
 
     </Grid>
+
 </Page>

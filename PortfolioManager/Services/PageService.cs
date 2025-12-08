@@ -15,9 +15,11 @@ public class PageService : IPageService
     public PageService()
     {
         Configure<PortfolioViewModel, PortfolioPage>();
-        Configure<PortfolioDetailViewModel, PortfolioDetailPage>();
+        Configure<PortfolioAnalysisViewModel, PortfolioAnalysisPage>();
         Configure<SettingsViewModel, SettingsPage>();
         Configure<PortfolioItemViewModel, PortfolioItemPage>();
+        Configure<PortfolioDetailViewModel, PortfolioDetailPage>();
+        Configure<PortfolioDividendCalendarViewModel, PortfolioDividendCalendarPage>();
     }
 
     public Type GetPageType(string key)

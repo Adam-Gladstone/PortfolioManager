@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml.Controls;
+using PortfolioManager.Contracts.Services;
 
 namespace PortfolioManager.Dialogs;
 public sealed partial class PortfolioAnalysisParamsDialog : Page
@@ -12,10 +13,18 @@ public sealed partial class PortfolioAnalysisParamsDialog : Page
     {
         InitializeComponent();
 
-        Benchmark = "^IBEX";
+        var defaultRiskFreeRateService = App.GetService<IDefaultRiskFreeRateService>();
+        var defaultBenchmarkIndexService = App.GetService<IDefaultBenchmarkIndexService>();
+        var defaultStartDateOffsetService = App.GetService<IDefaultStartDateOffsetService>();
+
+        Benchmark = defaultBenchmarkIndexService.BenchmarkIndex;
+        
         EndDateOffset = DateTime.Now;
-        StartDateOffset = new DateTimeOffset(DateTime.Now).AddYears(-5);
-        RiskFreeRate = 0.0125.ToString();
+
+        int offset = Convert.ToInt16(defaultStartDateOffsetService.StartDateOffset);
+        StartDateOffset = new DateTimeOffset(DateTime.Now).AddYears(-offset);
+        
+        RiskFreeRate = defaultRiskFreeRateService.RiskFreeRate;
     }
 
     private void Benchmark_TextChanged(object sender, TextChangedEventArgs e)

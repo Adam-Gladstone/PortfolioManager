@@ -20,11 +20,11 @@ public sealed partial class ShellPage : Page
     public ShellPage(ShellViewModel viewModel)
     {
         ViewModel = viewModel;
+        
         InitializeComponent();
 
         ViewModel.NavigationService.Frame = NavigationFrame;
         ViewModel.NavigationViewService.Initialize(NavigationViewControl);
-
 
         // A custom title bar is required for full window theme and Mica support.
         // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization

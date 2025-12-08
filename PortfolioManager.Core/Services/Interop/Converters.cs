@@ -1,7 +1,8 @@
-﻿using System;
+﻿using System.Data;
 using System.Diagnostics;
 using PortfolioManager.Core.Models;
 using Python.Runtime;
+using Python.Runtime.Codecs;
 
 namespace PortfolioManager.Core.Services.Interop;
 internal class Converters
@@ -18,35 +19,29 @@ internal class Converters
         return pyDict;
     }
 
-    public static PyDict ConvertToPythonDictionary(List<TickerValue> tickerValues)
+    public static PyDict ConvertToPythonDictionary(List<Holding> holdings)
     {
         var pyDict = new PyDict();
 
-        foreach (var item in tickerValues)
+        foreach (var item in holdings)
         {
-            pyDict[item.Ticker.ToString()] = item.Value.ToPython();
+            pyDict[item.Ticker.ToString()] = item.TotalCost.ToPython();
         }
 
         return pyDict;
     }
 
-    public static List<TickerWeight> ConvertTickerWeights(PyDict pyTickerWeights)
+    public static PyList ConvertToPythonList(List<TickerAttribute> attributes)
     {
-        var tickerWeights = new List<TickerWeight>();
+        var pyList = new PyList();
 
-        var keys = pyTickerWeights.Keys();
-        foreach (var key in keys)
+        foreach (var attribute in attributes)
         {
-            var tickerWeight = new TickerWeight
-            {
-                Ticker = key.ToString(),
-                Weight = System.Convert.ToDouble(pyTickerWeights[key])
-            };
-
-            tickerWeights.Add(tickerWeight);
+            var name = attribute.Name;
+            pyList.Append(name.ToPython());
         }
 
-        return tickerWeights;
+        return pyList;
     }
 
     public static Dictionary<string, List<Tuple<DateTime, double>>> ConvertIndividualCumulativeReturns(PyDict pyTickerWeights, PyDict pyAnalysisResults)
@@ -204,5 +199,126 @@ internal class Converters
         }
 
         return comparativeRiskReward;
+    }
+
+    public static DateTime ConvertToDateTime(object pyIntVal)
+    {
+        var val = Convert.ToInt64(pyIntVal);        // 1745884800
+        val /= 60;                                  //   29098080
+        val /= 60;                                  //     484968
+        val /= 24;                                  //      20207
+        val += 25569;                               // += 01/01/1970 = 45776
+        return DateTime.FromOADate((double)val);
+    }
+
+    public static object ConvertData(TickerAttribute attribute, object pyData)
+    {
+        object val = null;
+
+        try
+        {
+            val = attribute.Type switch
+            {
+                "double" => Convert.ToDouble(pyData),
+                "Date" => ConvertToDateTime(pyData),
+                "long" => Convert.ToInt64(pyData),
+                _ => pyData.ToString(),
+            };
+        }
+        catch (Exception e)
+        {
+            var message = $"Unable to convert {attribute.Name} to {attribute.Type} with value {pyData}\n. " +
+                $"The exception was:\n";
+            message += e.Message;
+            Debug.WriteLine(message);
+        }
+
+        return val;
+    }
+
+    public static DataTable ConvertToDataTable(PyObject pyObject, PortfolioItem portfolio)
+    {
+        var dt = new DataTable();
+
+        var codec = IterableDecoder.Instance;
+        if (codec.TryDecode(pyObject, out System.Collections.IEnumerable enumerable))
+        {
+            var c = 0;
+
+            foreach (var column in enumerable)
+            {
+                var columnName = column.ToString();
+
+                dt.Columns.Add(columnName);
+
+                var columnData = pyObject[columnName];
+
+                if (codec.TryDecode(columnData, out System.Collections.IEnumerable columnEnumerable))
+                {
+                    var r = 0;
+                    
+                    foreach (var row in columnEnumerable)
+                    {
+                        DataRow dr;
+
+                        if (c == 0)
+                        {
+                            dr = dt.NewRow();
+                        } 
+                        else
+                        {
+                            dr = dt.Rows[r];
+                        }
+
+                        var attribute = portfolio.TickerAttributes.Find(x => x.Name == columnName);
+
+                        dr[columnName] = (attribute != null) ? ConvertData(attribute, row) : row.ToString();
+
+                        if (c == 0)
+                        {
+                            dt.Rows.Add(dr);
+                        }
+
+                        r++;
+                    }
+                }
+                c++;
+            }
+        }
+
+        return dt;
+    }
+
+    public static DataTable ConvertPortfolioData(List<List<object>> table, int rows, int cols)
+    {
+        var dataTable = new DataTable();
+
+        for (var r = 0; r < rows; r++)
+        {
+            DataRow dataRow = null;
+            if(r != 0)
+            {
+                dataRow = dataTable.NewRow();
+            }
+
+            for (var c = 0; c < cols; c++)
+            {
+                if (r == 0)
+                {
+                    dataTable.Columns.Add(new DataColumn(table[c][r].ToString()));
+                }
+                else
+                {
+                    dataRow[c] = table[c][r].ToString();
+                }
+            }
+
+            if(r != 0)
+            {
+                dataTable.Rows.Add(dataRow);
+            }
+        }
+
+        return dataTable;
     }
 }

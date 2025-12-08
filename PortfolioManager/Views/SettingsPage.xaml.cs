@@ -5,14 +5,14 @@ using Microsoft.UI.Xaml.Navigation;
 using PortfolioManager.Contracts.Services;
 using PortfolioManager.ViewModels;
 
-using Windows.System;
-
 namespace PortfolioManager.Views;
 
 
 public sealed partial class SettingsPage : Page
 {
+#pragma warning disable CA1822 // Mark members as static
     public string Version
+#pragma warning restore CA1822 // Mark members as static
     {
         get
         {
@@ -32,7 +32,9 @@ public sealed partial class SettingsPage : Page
         }
     }
 
+#pragma warning disable CA1822 // Mark members as static
     public string WinAppSdkRuntimeDetails => App.WinAppSdkRuntimeDetails;
+#pragma warning restore CA1822 // Mark members as static
 
     public SettingsViewModel ViewModel
     {
@@ -53,25 +55,50 @@ public sealed partial class SettingsPage : Page
         base.OnNavigatedTo(e);
     }
 
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
+    {
+        var defaultRiskFreeRateService = App.GetService<IDefaultRiskFreeRateService>();
+        var currentRiskFreeRate = defaultRiskFreeRateService.RiskFreeRate;
+
+        if (currentRiskFreeRate != ViewModel.RiskFreeRate)
+        {
+            defaultRiskFreeRateService.SetRiskFreeRateAsync(ViewModel.RiskFreeRate);
+        }
+
+        var defaultBenchmarkIndexService = App.GetService<IDefaultBenchmarkIndexService>();
+        var currentBenchmarkIndex = defaultBenchmarkIndexService.BenchmarkIndex;
+
+        if (currentBenchmarkIndex != ViewModel.BenchmarkIndex)
+        {
+            defaultBenchmarkIndexService.SetBenchmarkIndexAsync(ViewModel.BenchmarkIndex);
+        }
+
+        base.OnNavigatedFrom(e);
+    }
+
+
     private void OnSettingsPageLoaded(object sender, RoutedEventArgs e)
     {
         var themeSelectorService = App.GetService<IThemeSelectorService>();
-        if (themeSelectorService != null)
+        var currentTheme = themeSelectorService.Theme;
+        switch (currentTheme)
         {
-            var currentTheme = themeSelectorService.Theme;
-            switch (currentTheme)
-            {
-                case ElementTheme.Light:
-                    themeMode.SelectedIndex = 0;
-                    break;
-                case ElementTheme.Dark:
-                    themeMode.SelectedIndex = 1;
-                    break;
-                case ElementTheme.Default:
-                    themeMode.SelectedIndex = 2;
-                    break;
-            }
+            case ElementTheme.Light:
+                themeMode.SelectedIndex = 0;
+                break;
+            case ElementTheme.Dark:
+                themeMode.SelectedIndex = 1;
+                break;
+            case ElementTheme.Default:
+                themeMode.SelectedIndex = 2;
+                break;
         }
+
+        var defaultStartDateOffsetService = App.GetService<IDefaultStartDateOffsetService>();
+
+        defaultStartDateOffset.SelectedIndex = 
+            string.IsNullOrEmpty(defaultStartDateOffsetService.StartDateOffset) ? -1 :
+            Convert.ToInt16(defaultStartDateOffsetService.StartDateOffset) - 1;
     }
 
     private void ThemeMode_SelectionChanged(object sender, RoutedEventArgs e)
@@ -89,8 +116,19 @@ public sealed partial class SettingsPage : Page
         }
     }
 
-    private async void BugRequestCard_Click(object sender, RoutedEventArgs e)
+    private void StartDateOffset_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        await Launcher.LaunchUriAsync(new Uri("https://github.com/Adam-Gladstone/PortfolioManager/issues"));
+        var selectedOffset = ((ComboBoxItem)defaultStartDateOffset.SelectedItem)?.Tag?.ToString();
+
+        if (!string.IsNullOrEmpty(selectedOffset))
+        {
+            var defaultStartDateOffsetService = App.GetService<IDefaultStartDateOffsetService>();
+            var currentOffset = defaultStartDateOffsetService.StartDateOffset;
+
+            if (currentOffset != selectedOffset)
+            {
+                defaultStartDateOffsetService.SetStartDateOffsetAsync(selectedOffset);
+            }
+        }
     }
 }

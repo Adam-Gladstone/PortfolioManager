@@ -10,72 +10,92 @@ using PortfolioManager.Contracts.Services;
 using PortfolioManager.Helpers;
 using Windows.ApplicationModel;
 using Windows.Storage.Pickers;
+using Windows.System;
 
 namespace PortfolioManager.ViewModels;
 
 public partial class SettingsViewModel : ObservableRecipient
 {
-    private readonly IThemeSelectorService _themeSelectorService;
-
-    private readonly IFolderSelectorService _folderSelectorService;
-
-    private readonly IFileSelectorService _pythonLibrarySelectorService;
+    [ObservableProperty]
+    private ElementTheme elementTheme;
 
     [ObservableProperty]
-    private ElementTheme _elementTheme;
+    private string versionDescription;
 
     [ObservableProperty]
-    private string _versionDescription;
+    private string databaseFolder;
 
     [ObservableProperty]
-    private string _databaseFolder;
+    private string pythonLibrary;
 
     [ObservableProperty]
-    private string _pythonLibrary;
+    private string tickerAttributes;
 
-    public RelayCommand SetFolderCommand
+    [ObservableProperty]
+    private string scriptFolder;
+
+    [ObservableProperty]
+    private string riskFreeRate;
+
+    [ObservableProperty]
+    private string benchmarkIndex;
+
+    [ObservableProperty]
+    private string startDateOffset;
+
+    public ICommand SetDatabaseFolderCommand { get; set; }
+
+    public ICommand SetScriptFolderCommand { get; set; }
+
+    public ICommand SetPythonLibraryCommand { get; set; }
+
+    public ICommand SwitchThemeCommand { get; set; }
+
+    public ICommand BugRequestCommand { get; set; }
+
+    public ICommand SetTickerAttributesCommand { get; set; }
+
+    public SettingsViewModel()
     {
-        get; set;
-    }
+        // Binding
+        var themeSelectorService = App.GetService<IThemeSelectorService>();
+        ElementTheme = themeSelectorService.Theme;
 
-    public RelayCommand SetPythonLibraryCommand
-    {
-        get; set;
-    }
+        var databaseFolderSelectorService = App.GetService<IDatabaseFolderSelectorService>();
+        DatabaseFolder = databaseFolderSelectorService.Folder;
 
-    public ICommand SwitchThemeCommand
-    {
-        get;
-    }
+        var scriptFolderSelectorService = App.GetService<IScriptFolderSelectorService>();
+        ScriptFolder = scriptFolderSelectorService.Folder;
 
-    public SettingsViewModel(
-        IThemeSelectorService themeSelectorService, 
-        IFileSelectorService fileSelectorService,
-        IFolderSelectorService folderSelectorService)
-    {
-        _themeSelectorService = themeSelectorService;
-        _pythonLibrarySelectorService = fileSelectorService;
-        _folderSelectorService = folderSelectorService;
+        var pythonLibrarySelectorService = App.GetService<IPythonFileSelectorService>();
+        PythonLibrary = pythonLibrarySelectorService.Filename;
 
-        _elementTheme = _themeSelectorService.Theme;
-        _versionDescription = GetVersionDescription();
+        var tickerAttributesSelectorService = App.GetService<ITickerAttributesSelectorService>();
+        TickerAttributes = tickerAttributesSelectorService.Filename;
 
-        SwitchThemeCommand = new RelayCommand<ElementTheme>(
-            async (param) =>
-            {
-                if (ElementTheme != param)
-                {
-                    ElementTheme = param;
-                    await _themeSelectorService.SetThemeAsync(param);
-                }
-            });
+        var defaultRiskFreeRateService = App.GetService<IDefaultRiskFreeRateService>();
+        RiskFreeRate = defaultRiskFreeRateService.RiskFreeRate;
 
-        SetFolderCommand = new RelayCommand(SetFolder);
+        var defaultBenchmarkIndexService = App.GetService<IDefaultBenchmarkIndexService>();
+        BenchmarkIndex = defaultBenchmarkIndexService.BenchmarkIndex;
 
-        SetPythonLibraryCommand = new RelayCommand(SetPythonLibrary);
+        var defaultStartDateOffsetService = App.GetService<IDefaultStartDateOffsetService>();
+        StartDateOffset = defaultStartDateOffsetService.StartDateOffset;
 
-        _databaseFolder = _folderSelectorService.Folder;
-        _pythonLibrary = _pythonLibrarySelectorService.Filename;
+        VersionDescription = GetVersionDescription();
+
+        // Command routing
+        SwitchThemeCommand = new RelayCommand<ElementTheme>(SetThemeAsync);
+
+        SetDatabaseFolderCommand = new RelayCommand(SetDatabaseFolderAsync);
+
+        SetPythonLibraryCommand = new RelayCommand(SetPythonLibraryAsync);
+
+        SetScriptFolderCommand = new RelayCommand(SetScriptFolderAsync);
+
+        BugRequestCommand = new RelayCommand(BugRequestAsync);
+
+        SetTickerAttributesCommand = new RelayCommand(SetTickerAttributesAsync);
     }
 
     private static string GetVersionDescription()
@@ -96,13 +116,13 @@ public partial class SettingsViewModel : ObservableRecipient
         return $"{"AppDisplayName".GetLocalized()} - {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
     }
 
-    private async void SetPythonLibrary()
+    private async void SetPythonLibraryAsync()
     {
         try
         {
             FileOpenPicker picker = new();
 
-            InitializePicker(picker);
+            App.InitializePicker(picker);
 
             picker.ViewMode = PickerViewMode.List;
             picker.SuggestedStartLocation = PickerLocationId.ComputerFolder;
@@ -111,9 +131,11 @@ public partial class SettingsViewModel : ObservableRecipient
             var file = await picker.PickSingleFileAsync();
             if (file != null)
             {
-                PythonLibrary = file.Path;
+                var pythonLibrarySelectorService = App.GetService<IPythonFileSelectorService>();
 
-                await _pythonLibrarySelectorService.SetFilenameAsync(file.Path);
+                await pythonLibrarySelectorService.SetFilenameAsync(file.Path);
+
+                PythonLibrary = file.Path;
             }
         }
         catch (Exception ex)
@@ -122,13 +144,25 @@ public partial class SettingsViewModel : ObservableRecipient
         }
     }
 
-    private async void SetFolder()
+    private async void SetThemeAsync(ElementTheme theme)
+    {
+        if (ElementTheme != theme)
+        {
+            var themeSelectorService = App.GetService<IThemeSelectorService>();
+
+            await themeSelectorService.SetThemeAsync(theme);
+            
+            ElementTheme = theme;
+        }
+    }
+
+    private async void SetDatabaseFolderAsync()
     {
         try
         {
             FolderPicker picker = new();
 
-            InitializePicker(picker);
+            App.InitializePicker(picker);
 
             picker.ViewMode = PickerViewMode.List;
             picker.SuggestedStartLocation = PickerLocationId.ComputerFolder;
@@ -137,10 +171,10 @@ public partial class SettingsViewModel : ObservableRecipient
             var folderItem = await picker.PickSingleFolderAsync();
             if (folderItem != null)
             {
-                DatabaseFolder = folderItem.Path;
-
-                var folderSelectorService = App.GetService<IFolderSelectorService>();
+                var folderSelectorService = App.GetService<IDatabaseFolderSelectorService>();
                 await folderSelectorService.SetFolderAsync(folderItem.Path);
+
+                DatabaseFolder = folderItem.Path;
             }
         }
         catch (Exception ex)
@@ -149,9 +183,63 @@ public partial class SettingsViewModel : ObservableRecipient
         }
     }
 
-    private static void InitializePicker(object picker)
+    private async void SetScriptFolderAsync()
     {
-        var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow);
-        WinRT.Interop.InitializeWithWindow.Initialize(picker, hWnd);
+        try
+        {
+            FolderPicker picker = new();
+
+            App.InitializePicker(picker);
+
+            picker.ViewMode = PickerViewMode.List;
+            picker.SuggestedStartLocation = PickerLocationId.ComputerFolder;
+            picker.CommitButtonText = "Select this folder";
+
+            var folderItem = await picker.PickSingleFolderAsync();
+            if (folderItem != null)
+            {
+                var folderSelectorService = App.GetService<IScriptFolderSelectorService>();
+                await folderSelectorService.SetFolderAsync(folderItem.Path);
+
+                ScriptFolder = folderItem.Path;
+            }
+        }
+        catch (Exception ex)
+        {
+            App.ReportException(ex);
+        }
+    }
+
+    private async void BugRequestAsync()
+    {
+        await Launcher.LaunchUriAsync(new Uri("https://github.com/Adam-Gladstone/PortfolioManager/issues"));
+    }
+
+    private async void SetTickerAttributesAsync()
+    {
+        try
+        {
+            FileOpenPicker picker = new();
+
+            App.InitializePicker(picker);
+
+            picker.ViewMode = PickerViewMode.List;
+            picker.SuggestedStartLocation = PickerLocationId.ComputerFolder;
+            picker.FileTypeFilter.Add(".csv");
+
+            var file = await picker.PickSingleFileAsync();
+            if (file != null)
+            {
+                var tickerAttributesSelectorService = App.GetService<ITickerAttributesSelectorService>();
+
+                await tickerAttributesSelectorService.SetFilenameAsync(file.Path);
+
+                TickerAttributes = file.Path;
+            }
+        }
+        catch (Exception ex)
+        {
+            App.ReportException(ex);
+        }
     }
 }

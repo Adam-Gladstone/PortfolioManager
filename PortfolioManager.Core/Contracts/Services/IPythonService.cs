@@ -3,8 +3,13 @@
 namespace PortfolioManager.Core.Contracts.Services;
 public interface IPythonService
 {
-    void Initialize(string pythonDll);
+    Task InitializeAsync(string pythonDll, string scriptFolder);
+
+    void Shutdown();
 
     bool RunPortfolioAnalysis(PortfolioItem portfolio);
 
+    bool RetrievePortfolioData(PortfolioItem portfolio);
+
+    bool RetrieveDividendCalendarData(PortfolioItem portfolio);
 }

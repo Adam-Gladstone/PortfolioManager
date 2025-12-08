@@ -171,4 +171,19 @@
   <data name="Shell_PortfolioItem.Content" xml:space="preserve">
     <value>PortfolioItem</value>
   </data>
+  <data name="Settings_RiskFreeRate" xml:space="preserve">
+    <value>0.125</value>
+  </data>
+  <data name="Settings_BenchmarkIndex" xml:space="preserve">
+    <value>^IBEX</value>
+  </data>
+  <data name="Settings_StartDateOffset" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="Settings_ScriptFolder" xml:space="preserve">
+    <value>Script Folder</value>
+  </data>
+  <data name="Settings_TickerAttributes" xml:space="preserve">
+    <value>Ticker Attributes</value>
+  </data>
 </root>

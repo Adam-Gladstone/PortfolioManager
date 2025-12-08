@@ -233,10 +233,10 @@ def portfolio_vs_benchmark(
 
 """
 tickers = {
-    'SAB.MC' : (1000.0),
-    'FER.MC' : (750.0),
-    'ITX.MC' : (250.0),
-    'MEL.MC' : (2000.0)
+    'SAB.MC': (1000.0),
+    'FER.MC': (750.0),
+    'ITX.MC': (250.0),
+    'MEL.MC': (2000.0)
 }
 
 start: str = '2020-02-18'

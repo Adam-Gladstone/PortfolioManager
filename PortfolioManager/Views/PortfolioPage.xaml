@@ -2,187 +2,403 @@
     x:Class="PortfolioManager.Views.PortfolioPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:sys="using:System"
-    xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
-    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:PortfolioManager.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:behaviors="using:PortfolioManager.Behaviors"
     xmlns:models="using:PortfolioManager.Core.Models"
+    xmlns:viewmodels="using:PortfolioManager.ViewModels"
+    xmlns:oxyplot="using:OxyPlot"
     mc:Ignorable="d">
+    
+    <Page.Resources>
 
-    <Grid x:Name="ContentArea">
+        <!--  XamlUICommand to handle routing the AppBarButton command in the list view  -->
 
-        <!--  Grid: 1 column, 2 rows: Grid (containing the query box and command bar), ListView  -->
+        <!--  Add command  -->
+        <XamlUICommand
+            x:Name="AddCommand"
+            Command="{x:Bind ViewModel.AddCommand}"
+            Description="Add a portfolio to the collection"
+            Label="Add">
+
+            <XamlUICommand.IconSource>
+                <SymbolIconSource Symbol="Add" />
+            </XamlUICommand.IconSource>
+
+            <XamlUICommand.KeyboardAccelerators>
+                <KeyboardAccelerator Key="U" Modifiers="Control" />
+            </XamlUICommand.KeyboardAccelerators>
+        </XamlUICommand>
+
+        <!--  Edit command  -->
+        <XamlUICommand
+            x:Name="EditCommand"
+            Command="{x:Bind ViewModel.EditCommand}"
+            Description="Edit the currently selected portfolio"
+            Label="Edit">
+
+            <XamlUICommand.IconSource>
+                <SymbolIconSource Symbol="Edit" />
+            </XamlUICommand.IconSource>
+
+            <XamlUICommand.KeyboardAccelerators>
+                <KeyboardAccelerator Key="E" Modifiers="Control" />
+            </XamlUICommand.KeyboardAccelerators>
+        </XamlUICommand>
+
+        <!--  Delete  -->
+        <XamlUICommand
+            x:Name="DeleteCommand"
+            Command="{x:Bind ViewModel.DeleteCommand}"
+            Description="Delete the currently selected portfolio"
+            Label="Delete">
+
+            <XamlUICommand.IconSource>
+                <SymbolIconSource Symbol="Delete" />
+            </XamlUICommand.IconSource>
+
+            <XamlUICommand.KeyboardAccelerators>
+                <KeyboardAccelerator Key="D" Modifiers="Control" />
+            </XamlUICommand.KeyboardAccelerators>
+        </XamlUICommand>
+
+        <!--  Run  -->
+        <XamlUICommand
+            x:Name="RunCommand"
+            Command="{x:Bind ViewModel.RunCommand}"
+            Description="Run analysis for the currently selected portfolio"
+            Label="Run">
+
+            <XamlUICommand.IconSource>
+                <SymbolIconSource Symbol="Play" />
+            </XamlUICommand.IconSource>
+
+            <XamlUICommand.KeyboardAccelerators>
+                <KeyboardAccelerator Key="R" Modifiers="Control" />
+            </XamlUICommand.KeyboardAccelerators>
+        </XamlUICommand>
+
+        <!--  PortfolioData  -->
+        <XamlUICommand
+            x:Name="PortfolioDataCommand"
+            Command="{x:Bind ViewModel.PortfolioDataCommand}"
+            Description="Retrieve data for the currently selected portfolio"
+            Label="Data">
+
+            <XamlUICommand.IconSource>
+                <SymbolIconSource Symbol="Calculator" />
+            </XamlUICommand.IconSource>
+
+            <XamlUICommand.KeyboardAccelerators>
+                <KeyboardAccelerator Key="O" Modifiers="Control" />
+            </XamlUICommand.KeyboardAccelerators>
+        </XamlUICommand>
+
+        <!--  DividendCalendarData  -->
+        <XamlUICommand
+            x:Name="PortfolioDividendCalendarCommand"
+            Command="{x:Bind ViewModel.PortfolioDividendCalendarCommand}"
+            Description="Retrieve dividend calendar data for the currently selected portfolio"
+            Label="Calendar">
+
+            <XamlUICommand.IconSource>
+                <SymbolIconSource Symbol="Calendar" />
+            </XamlUICommand.IconSource>
+
+            <XamlUICommand.KeyboardAccelerators>
+                <KeyboardAccelerator Key="L" Modifiers="Control" />
+            </XamlUICommand.KeyboardAccelerators>
+        </XamlUICommand>
+
+    </Page.Resources>
+
+    <!--  Main grid  -->
+    <Grid
+        x:Name="ContentArea"
+        Margin="0,0,0,80"
+        ColumnSpacing="0"
+        RowSpacing="0">
+
+        <!--  Two columns  -->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="2*" />
+        </Grid.ColumnDefinitions>
+
+        <!--  Two rows  -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  Grid inside the first row and column, containing AutoSuggest box and CommandBar  -->
+        <!--  This arrangment spans the two columns defined on the outer grid  -->
         <Grid
-            Margin="0,0,0,80"
-            ColumnSpacing="0"
-            RowSpacing="0">
+            Grid.ColumnSpan="2"
+            Height="52"
+            Margin="0,0,0,16"
+            HorizontalAlignment="Stretch"
+            Background="Transparent"
+            CornerRadius="4">
 
-            <Grid.Resources>
-                <CollectionViewSource x:Name="PortfolioCVS" IsSourceGrouped="true" />
-            </Grid.Resources>
-
-            <!--  One column  -->
+            <!--  Three columns  -->
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="2*" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!--  Three rows  -->
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+            <!--  AutoSuggest box for filtering and search  -->
+            <AutoSuggestBox
+                Margin="8,0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Center"
+                QueryIcon="Find"
+                QuerySubmitted="SearchBox_QuerySubmitted"
+                TextChanged="SearchBox_TextChanged" />
 
-            <Grid Grid.Row="0">
+            <!--  CommandBar for ListView operations  -->
+            <CommandBar
+                Grid.Column="1"
+                Background="Transparent"
+                DefaultLabelPosition="Right">
 
-                <!--  Grid row 0 with 2 columns  -->
-                <Grid>
-                    <!--  Two columns  -->
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+                <!--  AppBarButton for the Add operation  -->
+                <AppBarButton
+                    Command="{x:Bind AddCommand}"
+                    Icon="Add"
+                    Label="Add"
+                    ToolTipService.ToolTip="Add a portfolio to the collection" />
 
-                    <!--  AutoSuggest box for filtering and search  -->
-                    <AutoSuggestBox
-                        x:Name="SearchBox"
-                        Grid.Column="0"
-                        Margin="0,0"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        QueryIcon="Find"
-                        QuerySubmitted="SearchBox_QuerySubmitted"
-                        TextChanged="SearchBox_TextChanged" />
+                <!--  AppBarButton for the Edit operation  -->
+                <AppBarButton
+                    Command="{x:Bind EditCommand}"
+                    Icon="Edit"
+                    IsEnabled="{x:Bind ViewModel.HasCurrent, Mode=OneWay}"
+                    Label="Edit"
+                    ToolTipService.ToolTip="Edit the currently selected portfolio" />
 
-                    <!--  CommandBar  -->
-                    <CommandBar
-                        Grid.Column="1"
-                        HorizontalAlignment="Stretch"
-                        Background="Transparent"
-                        DefaultLabelPosition="Right"
-                        IsOpen="True">
+                <!--  AppBarButton for the Delete operation  -->
+                <AppBarButton
+                    Command="{x:Bind DeleteCommand}"
+                    Icon="Delete"
+                    IsEnabled="{x:Bind ViewModel.HasCurrent, Mode=OneWay}"
+                    Label="Delete"
+                    ToolTipService.ToolTip="Delete the currently selected portfolio" />
 
-                        <AppBarSeparator />
+                <!--  AppBarButton for the Run operation  -->
+                <AppBarButton
+                    x:Name="ButtonRun"
+                    Command="{x:Bind RunCommand}"
+                    Icon="Play"
+                    IsEnabled="{x:Bind ViewModel.HasCurrent, Mode=OneWay}"
+                    Label="Run"
+                    ToolTipService.ToolTip="Run analysis for the currently selected portfolio" />
 
-                        <AppBarButton
-                            x:Name="ButtonAdd"
-                            Click="ButtonAdd_Click"
-                            Icon="Add"
-                            IsEnabled="True"
-                            Label="Add" />
+                <!--  AppBarButton for the PortfolioData operation  -->
+                <AppBarButton
+                    Command="{x:Bind PortfolioDataCommand}"
+                    Icon="Calculator"
+                    IsEnabled="{x:Bind ViewModel.HasCurrent, Mode=OneWay}"
+                    Label="Data"
+                    ToolTipService.ToolTip="Retrieve data for the currently selected portfolio" />
 
-                        <AppBarButton
-                            x:Name="ButtonEdit"
-                            Click="ButtonEdit_Click"
-                            Icon="Edit"
-                            IsEnabled="True"
-                            Label="Edit" />
+                <!--  AppBarButton for the PortfolioDividendCalendarData operation  -->
+                <AppBarButton
+                    Command="{x:Bind PortfolioDividendCalendarCommand}"
+                    Icon="Calendar"
+                    IsEnabled="{x:Bind ViewModel.HasCurrent, Mode=OneWay}"
+                    Label="Calendar"
+                    ToolTipService.ToolTip="Retrieve dividend calendar data for the currently selected portfolio" />
 
-                        <AppBarButton
-                            x:Name="ButtonDelete"
-                            Click="ButtonDelete_Click"
-                            Icon="Delete"
-                            IsEnabled="True"
-                            Label="Delete" />
+            </CommandBar>
 
-                        <AppBarSeparator />
-
-                        <AppBarButton
-                            x:Name="ButtonRun"
-                            Click="ButtonRun_Click"
-                            Icon="Play"
-                            IsEnabled="True"
-                            Label="Run" />
-
-                    </CommandBar>
-
-                </Grid>
-
-            </Grid>
-
-            <!--  ListView  -->
-            <ListView
-                x:Name="ListView"
-                Grid.Row="1"
-                DoubleTapped="ListView_DoubleTapped"
-                ItemsSource="{x:Bind PortfolioCVS.View, Mode=OneWay}"
-                SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
-                SelectionChanged="ListView_SelectionChanged"
-                SelectionMode="Single"
-                ShowsScrollingPlaceholders="True">
-
-                <!--  ListView ItemsPanel  -->
-                <ListView.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <!--  Retain the group header when scrolling down in the list  -->
-                        <ItemsStackPanel AreStickyGroupHeadersEnabled="True" />
-                    </ItemsPanelTemplate>
-                </ListView.ItemsPanel>
-
-                <!--  ListView GroupStyle  -->
-                <ListView.GroupStyle>
-                    <GroupStyle>
-                        <GroupStyle.HeaderTemplate>
-
-                            <DataTemplate x:DataType="local:GroupedList">
-                                <Border AutomationProperties.AccessibilityView="Raw">
-                                    <TextBlock
-                                        AutomationProperties.AccessibilityView="Raw"
-                                        Style="{ThemeResource TitleTextBlockStyle}"
-                                        Text="{x:Bind Key}" />
-                                </Border>
-                            </DataTemplate>
-
-                        </GroupStyle.HeaderTemplate>
-                    </GroupStyle>
-                </ListView.GroupStyle>
-
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="models:PortfolioItem">
-
-                        <Grid IsHitTestVisible="False">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-
-                            <FontIcon AutomationProperties.Name="{x:Bind SymbolName}" Glyph="{x:Bind Symbol}" />
-                            
-                            <TextBlock
-                                Grid.Column="1"
-                                Margin="10,0,15,0"
-                                HorizontalAlignment="Left"
-                                FontSize="15"
-                                Style="{ThemeResource BodyTextBlockStyle}"
-                                Text="{x:Bind Path=Name}" />
-
-                            <TextBlock
-                                Grid.Column="2"
-                                Margin="10,0,15,0"
-                                HorizontalAlignment="Left"
-                                FontSize="15"
-                                Style="{ThemeResource BodyTextBlockStyle}"
-                                Text="{x:Bind Path=Type}" />
-
-                            <TextBlock
-                                Grid.Column="3"
-                                Margin="10,0,15,0"
-                                HorizontalAlignment="Right"
-                                FontSize="12"
-                                Style="{ThemeResource BodyTextBlockStyle}"
-                                Text="{x:Bind Path=Components}" />
-
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-
-            </ListView>
+            <ProgressRing
+                Grid.Column="2"
+                Width="20"
+                Height="20"
+                IsActive="{x:Bind ViewModel.IsWorking, Mode=OneWay}" />
 
         </Grid>
+
+        <!--  List of available portfolios  -->
+        <ListView
+            x:Name="ListView"
+            Grid.Row="1"
+            DoubleTapped="ListView_DoubleTapped"
+            IsDoubleTapEnabled="True"
+            ItemsSource="{x:Bind ViewModel.Items, Mode=OneWay}"
+            SelectedItem="{x:Bind ViewModel.Current, Mode=TwoWay}"
+            SelectionChanged="ListView_SelectionChanged">
+
+            <!--  ListView.ItemTemplate defines how each item is displayed  -->
+            <ListView.ItemTemplate>
+
+                <!--  Associate the XAMLCodeTemplate class with the data template for the list view items  -->
+                <DataTemplate x:DataType="models:PortfolioItem">
+
+                    <!--  Encapsulate behaviours in a user control  -->
+                    <UserControl PointerEntered="ListViewItem_PointerEntered" PointerExited="ListViewItem_PointerExited">
+
+                        <!--  Layout items relative to this panel  -->
+                        <RelativePanel Background="Transparent">
+                            <!--  Font for the portfolio item  -->
+                            <FontIcon
+                                Margin="0,15,10,0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                FontSize="32"
+                                Glyph="&#xEADF;" />
+
+                            <!--  Portfolio Name & Type  -->
+                            <TextBlock
+                                Margin="38,8"
+                                RelativePanel.AlignLeftWithPanel="True"
+                                RelativePanel.AlignVerticalCenterWithPanel="True">
+                                <Run FontWeight="SemiBold" Text="{x:Bind Name, Mode=OneWay}" />
+                                <LineBreak />
+                                <Run Text="{x:Bind Type, Mode=OneWay}" />
+                            </TextBlock>
+
+                            <!--  StackPanel containing button(s) which appear when hovering over the item  -->
+                            <StackPanel
+                                x:Name="HoverButtons"
+                                Orientation="Horizontal"
+                                RelativePanel.AlignRightWithPanel="True"
+                                RelativePanel.AlignVerticalCenterWithPanel="True"
+                                Visibility="Collapsed">
+
+                                <!--  This is linked to the XamlUICommand defined in the Page.Resources  -->
+                                <!--  AppBarButton for the edit operation  -->
+
+                                <AppBarButton
+                                    Width="32"
+                                    HorizontalAlignment="Right"
+                                    Command="{StaticResource EditCommand}"
+                                    CommandParameter="{x:Bind Name}"
+                                    IsCompact="True" />
+
+                                <AppBarButton
+                                    Width="32"
+                                    HorizontalAlignment="Right"
+                                    Command="{StaticResource DeleteCommand}"
+                                    CommandParameter="{x:Bind Name}"
+                                    IsCompact="True" />
+
+                                <AppBarButton
+                                    Width="32"
+                                    HorizontalAlignment="Right"
+                                    Command="{StaticResource RunCommand}"
+                                    CommandParameter="{x:Bind Name}"
+                                    IsCompact="True" />
+
+                                <AppBarButton
+                                    Width="32"
+                                    HorizontalAlignment="Right"
+                                    Command="{StaticResource PortfolioDataCommand}"
+                                    CommandParameter="{x:Bind Name}"
+                                    IsCompact="True" />
+
+                                <AppBarButton
+                                    Width="32"
+                                    HorizontalAlignment="Right"
+                                    Command="{StaticResource PortfolioDividendCalendarCommand}"
+                                    CommandParameter="{x:Bind Name}"
+                                    IsCompact="True" />
+
+                            </StackPanel>
+
+                            <!--  Define the hovering states  -->
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="HoveringStates">
+                                    <VisualState x:Name="HoverButtonsHidden" />
+                                    <VisualState x:Name="HoverButtonsShown">
+                                        <VisualState.Setters>
+                                            <Setter Target="HoverButtons.Visibility" Value="Visible" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </RelativePanel>
+
+                    </UserControl>
+
+                </DataTemplate>
+
+            </ListView.ItemTemplate>
+
+        </ListView>
+
+        <!--  Details 'panel' is a grid view in row 1 column 1  -->
+        <GridView
+            x:Name="GridView"
+            Grid.Row="1"
+            Grid.Column="1"
+            Margin="10"
+            VerticalAlignment="Stretch"
+            SelectionMode="None">
+
+            <GridView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VariableSizedWrapGrid
+                        ItemHeight="320"
+                        ItemWidth="400"
+                        Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </GridView.ItemsPanel>
+
+            <!--  Portfolio Allocation (pie chart)  -->
+            <GridViewItem
+                Margin="0,0,20,20"
+                Padding="0"
+                CornerRadius="4">
+                <GridViewItem.Transitions>
+                    <TransitionCollection>
+                        <RepositionThemeTransition />
+                    </TransitionCollection>
+                </GridViewItem.Transitions>
+                <Grid
+                    Width="360"
+                    Height="280"
+                    Margin="0"
+                    CornerRadius="4">
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Border
+                        Grid.RowSpan="10"
+                        Margin="0"
+                        Background="{ThemeResource SystemAccentColor}"
+                        BorderThickness="0"
+                        Opacity=".2" />
+                    <Border
+                        Margin="0"
+                        Background="{ThemeResource SystemAccentColor}"
+                        BorderThickness="0"
+                        Opacity=".5" />
+
+                    <TextBlock
+                        Margin="10,5,0,0"
+                        Padding="5"
+                        HorizontalAlignment="Center"
+                        FontSize="16"
+                        Text="Portfolio Allocation" />
+
+                    <oxyplot:PlotView
+                        Grid.Row="1"
+                        Margin="25"
+                        Background="Transparent"
+                        Model="{x:Bind ViewModel.PortfolioWeightsModel, Mode=OneWay}" />
+                </Grid>
+
+            </GridViewItem>
+
+        </GridView>
 
     </Grid>
 

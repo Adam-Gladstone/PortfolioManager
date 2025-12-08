@@ -1,0 +1,232 @@
+https://help.snowball-analytics.com/overview/?_gl=1*yw1sfa*_gcl_aw*R0NMLjE3NDI4Mjc2OTIuQ2owS0NRandoWVNfQmhEMkFSSXNBSlRNTVFaYlNyNzR3dEtOc3NHYVhsUjlBYmgzOFo4WGhuYklMNVpla3BIVjEzWlJEVWFDLXlnRVJnQWFBclJoRUFMd193Y0I.*_gcl_au*MTAxMTIwMDY0NS4xNzQyODI3Njg4*FPAU*MTM3MjM5NTEzOS4xNzQyODI3Njg3*_up*MQ..*_gs*MQ..*_ga*MzIxMjg1MTQ4LjE3NDI4Mjc2ODg.*_ga_NV375FXVKD*MTc0MjgyNzY4OC4xLjEuMTc0MjgyNzY5MS4wLjAuNzY0MzE0MTI.*_fplc*N0NDczZuWFB5YzhiSVpnSCUyRjQwRUJqUmpnYzRZTG9mYkR4SG5SNlpyWk9iJTJGRFU5VGU3VnJ2OVdlYkdhSzhJbmd6d1R5V05BQ0g4aFRzVGlDTDN3S0FmT2klMkIyMmw5RFB4SDM0b2hEbUY3TnE5V1pyTThRbGZQdkMzWjJTQk1nJTNEJTNE*_ga_E3P9EZHFTK*MTc0MjgyNzY4Ny4xLjEuMTc0MjgyNzY5My4wLjAuMzgxNTUzNDY3&gclid=Cj0KCQjwhYS_BhD2ARIsAJTMMQZbSr74wtKNssGaXlR9Abh38Z8XhnbIL5ZekpHV13ZRDUaC-ygERgAaArRhEALw_wcB#dashboard
+
+Snowball Analytics
+
+https://snowball-analytics.com/
+
+------------------------------------------------------------------------------------------------
+
+Set up your target allocations with our Categories
+	Dashboard - Cards: Value, Total Profit, IRR, Passive Income; Pie chart, portfolio details?
+	
+		Value - the current value of the portfolio in the selected currency
+		Invested - the amount of purchases of all current (unsold) assets + currency
+		Total profit, which includes dividends received, realized PL, fees paid and taxes on dividends for the entire lifetime of the portfolio
+		Internal Rate of Return - net annual return earned by the investor over a period of time and calculated on the basis of the incoming and outgoing cash flows
+		Passive income from dividends and regular payments. Only regular payments are considered (special dividends and one-time payments are not included). The yield (%) is displayed in relation to the current value of assets (excluding cash balance).
+
+		The graphs of the received dividends show how many payouts have been received for the entire existence of the portfolio. The information is taken from the imported transactions. Depending on the tax settings in the portfolio, the amounts can be displayed both BEFORE and AFTER the tax payment.
+
+		The graphs of future payments is forecasted and is based on information about current assets and forecasted payouts. Depending on the tax settings in the portfolio, the amounts can be displayed both BEFORE and AFTER  the tax payment.
+
+	Common analytics
+		Data grid (or similar) - NOTE the use of on/off selectors to display key indicators
+		
+		The "My holdings" table can be customized according to your needs. By clicking the icon on the right, you can switch or edit columns, and on the left there is an opportunity to select predefined tabs for general information on the holding, dividends and profits.
+	
+	Dividend Analytics
+		On the Analytics - Dividends tab you can find a detailed asset analysis from the point of view of the dividend investment strategy. The filter option is available and functions like the other tabs on the page. You can use this filter to have the analytics displayed only for selected holdings /categories.
+
+		The "Yield" block reflects the yield for the year ahead from the payment of dividends which come from the current value of the portfolio after taxes (specified in the portfolio settings). The returns before taxes and your revenue on invested capital are also indicated.
+
+		The "Dividends" block shows the projected profitability in monetary terms, the average annual growth of dividends, as well as the average amount of monthly payouts.
+
+		The graph "Current annual dividends" shows the ratio of current annual dividends to the capital invested in them - the blue column shows the amount of income, the purple column (dash) shows what amount of capital was invested into the asset, relative to the income. That means, the higher the blue segment and the lower the purple one, the higher the return on the asset on the invested capital. The graph is plotted for 35 holdings or categories with the highest dividends per year.
+
+		The "Dividend Rating" is a special metric calculated based on 13 fundamental parameters. It reflects the likelihood that the company reduces or cancels dividends based on its financial condition. The higher the number, the less likely it is to cancel or reduce the dividend.	
+
+		The "Average Annual Growth" graph shows the average annual growth of the company's payments over the past 5 years. You can build the graph both by holdings and by categories.
+
+		The "Future Payments" schedule reflects the announced and projected payments of companies for the year ahead. More detailed information about future payments is available in the Dividend Calendar.
+
+	Growth Analytics
+		In growth analytics, the central place is dedicated to the portfolio value chart. It has several display modes and settings, including the ability to compare current values with a benchmark (index funds or any other asset):
+
+		The "Portfolio History" display mode shows the value of your portfolio on the chart from the very beginning of its existence (from the first transaction). Your trades affect the value of the portfolio - when you buy something, the values go up, when you sell something, they go down.
+		Comparison with the benchmark in this mode is performed as follows: we take all your buy-sell transactions and "buy" or "sell" the selected fund for the total value of these transactions. That is, we imagine what would happen if, instead of assets in your portfolio, you chose to buy the shares of the selected fund. When the option Reinvestment of dividends is enabled, additional shares of this fund are purchased for the amount of the payouts received.
+
+		The "Assets History" display mode shows how your current portfolio behaved in the past. In other words, if you currently have 10 AAPL shares in your portfolio, it will show how much 10 AAPL shares have been worth on average over the past 10 years (or 5 years, 1 year, 6 months, ...).
+
+
+		The Portfolio performance chart shows the total profit of the portfolio throughout its history, and you can also view the profit for any period. The profit for the period is calculated relative to the value of the portfolio at the end of the previous day. Grouping by categories and by source of profit (capital gain, dividends, realized PL, etc.) is available in the settings.
+
+	Portfolio Metrics
+		The Analytics - Metrics tab contains the main indicators of the portfolio, thanks to which you can quickly assess the risk-return ratio of the portfolio. A filter is also available on this tab, so you can view metrics for individual assets and categories.
+
+		P/E shows the weighted average ratio of the value of the shares of companies in the portfolio to their profits.
+
+		The Beta coefficient (volatility) shows the degree to which the price of an asset or an entire portfolio depends on the overall market dynamics measured by a broad market index — for example, the S&P 500.
+
+		The Sharpe ratio is an indicator of the effectiveness of an investment portfolio (asset), which is calculated as the ratio of the average risk to the average portfolio deviation. It is used to determine how well the return on an asset compensates for the risk taken by the investor. The S&P 500 (SPY) fund is used as a benchmark. As a risk-free asset we use the yield of 5-year US Treasury bonds.
+
+		The Sortino ratio is an indicator that allows you to assess the profitability and risk of an investment instrument, portfolio or strategy. It is similar to the Sharpe coefficient, but this indicator considers only negative fluctuations in profitability.
+
+	Dividend calendar
+		In the "Dividend Calendar", future payments are calculated based on information about declared dividend payments or past dividend rates of the company. For coupon payments the calculation is based on information about the frequency of payments.
+
+		Please note! The date of actual payouts to your broker's account may differ from the one stated as it depends on your broker. If the dividends have the Estimated status, it means that we have calculated the approximate payment date based on past payments. This means that the dates and the amount of payments are approximate and may change.
+
+		Depending on the tax settings in the portfolio, the amounts can be displayed both BEFORE and AFTER the tax is paid.	
+	
+	Cash tracking
+		Cash tracking option is available for all portfolios - "Current balance only" or "All movements". Cash tracking can also be disabled for the portfolio.	
+	
+	Company page
+		When you click on a holding in the portfolio, you can go to the page with detailed information about the company or fund. The general tab provides brief financial information on the asset, a price chart and information about transactions in your portfolios.
+
+		The dividends tab provides detailed dividend analytics, payment history in tabular and graphical form. The YTM dividend yield chart shows the ratio of the current share price to total payouts over the past 12 months, which makes it possible to estimate the change in the value of the company in terms of its dividend payments.	
+
+		The financials tab contains information about the company's financial indicators for the last 10 years. You can select any rows in the table and display the values on the graph, and also at the top of the graph there is a field for selecting companies for comparison by the indicators you decide to choose.	
+
+	Portfolio rebalancing
+		The Portfolio rebalancing tool helps to plan purchases and rebalance your portfolio. Based on the target allocations of categories and holdings in the portfolio, we suggest which assets to buy to keep your portfolio balanced. The tool is especially useful to top up the portfolio regularly.
+
+		Using the settings, you can balance the portfolio to a certain amount, calculate the necessary amount of top up payments for balancing a certain category, or plan to sell some assets for partial withdrawal of funds from a brokerage account.
+
+
+---------------------------------
+The Analytics page shows the main indicators for the portfolio:
+
+Value;
+Invested;
+Total profit;
+Profit for the day (daily);
+IRR;
+Current holdings;
+Passive income.
+Let's consider each indicator.
+
+1. Value is the sum of the value of current assets and cash. The value of each asset is calculated by the formula: current price of the asset * by its quantity.
+
+If cash accounting is disabled in the portfolio, cash is not included in the value (Read More).
+
+2. Invested - this indicator depends on the settings of cash accounting in the portfolio:
+
+All cash movements: all deposits minus all withdrawals;
+Current balance: sum of purchases of all current assets (total cost basis) + cash balance;
+Cash accounting disabled: sum of purchases of all current assets (total cost basis).
+
+3. Total profit - this indicator also depends on the settings of cash accounting in the portfolio:
+
+All cash movements: portfolio value - invested + dividends that are credited to another account (does not affect cash balance);
+Current balance and cash accounting disabled: portfolio value - invested + dividends - taxes - commissions + sales profit.
+
+4. Profit for the day (daily) - takes into account only the change in the price of assets for the last working day of the exchange, and is calculated as the quantity of current assets * by the change in price for the day. If the exchange is open today, it is necessary to take into account today, in other cases the last day when the exchange was open. Important: quotes are updated approximately every 30 minutes and each asset has its own “timer”, so they are updated at different times within 30 minutes.
+
+5. IRR - this indicator is calculated by XIRR. More details can be found in this article.
+
+6. Current holdings - shows the yield on current assets based on purchase transactions only (all other transactions are not taken into account). The XIRR formula is used for calculation, which uses purchase transactions of current assets with the final value of the total value of assets.
+
+7. Passive income - is calculated as the sum of dividends for the next year from the 1st day of the current month divided by the current value of the portfolio without cash. Only regular payments are taken into account (special dividends are not considered).
+
+====================================================
+
+Database
+Portfolio table
+Transactions table
+Dividends table
+
+Model
+Portfolio
+	Portfolio Id
+	Portfolio Name
+	Dictionary (keyed on ticker) of holdings
+
+Holding (e.g SAN.MC, 600 shares, 
+	id
+	ticker
+	total shares = aggregated transactions (sum of buys - sum of sells)
+	total cost = (sum of transaction cost)
+	average cost = compute weighted average
+
+Transaction
+	Id
+	Date
+	ticker
+	Buy/Sell
+	# shares
+	Price
+	(commissions, taxes etc)
+	Cost
+
+Dividend
+	id
+	Date
+	ticker
+	type
+	# shares
+	gross
+	net
+
+Initially you need to be able to add transactions.
+After this you can set up a 'portfolio'. Holdings is an aggregated/grouped view of transactions.
+
+
+Add / Edit / Delete Portfolios
+	- add a name or id
+	- instead of 'add ticker value', choose from list of holdings or unique tickers from the holdings table
+
+Add / Edit / Delete Transactions - table view (https://xamlbrewer.wordpress.com/2024/07/03/a-lap-around-the-winui-tableview/)
+Add / Edit / Delete Dividends
+
+------------------------------------------------------------------------------------------------
+Views
+
+Portfolio View (Dashboard)   - GridView with image/text or ItemsView
+	- Name
+	- components
+	- donut (allocations)
+	- ytd growth? or single indicator
+
+Transactions (data entry)								- Table view
+Analytics - Data grid with columns that are choosable   - Table view
+Dividends												- Table view
+
+Growth
+Portfolio Analysis - Run (similar to previous version's charts)
+
+	
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

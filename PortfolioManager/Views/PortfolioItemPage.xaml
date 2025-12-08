@@ -5,8 +5,30 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:PortfolioManager.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:behaviors="using:PortfolioManager.Behaviors"
     xmlns:models="using:PortfolioManager.Core.Models"
+    xmlns:viewmodels="using:PortfolioManager.ViewModels"
+    xmlns:sys="using:System"
     mc:Ignorable="d">
+
+    <!-- Setup page header (including the title) -->
+    <behaviors:NavigationViewHeaderBehavior.HeaderTemplate>
+
+        <DataTemplate x:DataType="viewmodels:PortfolioItemViewModel">
+
+            <CommandBar
+                Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                Foreground="{ThemeResource ApplicationForegroundThemeBrush}">
+
+                <CommandBar.Content>
+                    <TextBlock Text="Portfolio Item" />
+                </CommandBar.Content>
+
+            </CommandBar>
+
+        </DataTemplate>
+
+    </behaviors:NavigationViewHeaderBehavior.HeaderTemplate>
 
     <Grid x:Name="ContentArea">
         <Grid.RowDefinitions>
@@ -47,65 +69,104 @@
                     Text="{x:Bind Path=ViewModel.PortfolioItem.Type, Mode=TwoWay}"
                     TextChanged="PortfolioType_TextChanged" />
 
-                <!--  Ticker Values  -->
+                <!--  Command bar for the transactions list  -->
                 <CommandBar
+                    HorizontalAlignment="Left"
                     Background="Transparent"
                     DefaultLabelPosition="Right"
                     IsOpen="False">
+
                     <AppBarButton
                         Click="ButtonAdd_Click"
                         IsCompact="False"
-                        Label="Add Ticker Value">
+                        Label="Add Transaction">
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE710;" />
                     </AppBarButton>
+
+                    <AppBarButton
+                        Command="{x:Bind ViewModel.ImportCommand}"
+                        IsCompact="False"
+                        Label="Import Transactions">
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8B6;" />
+                    </AppBarButton>
+
                 </CommandBar>
 
-                <!--  Ticker List  -->
+                <!--  Transactions List  -->
                 <ListView
-                    x:Name="ListViewTickerValues"
-                    Width="400"
+                    x:Name="ListViewTransactions"
+                    Width="800"
                     Height="400"
                     HorizontalAlignment="Left"
                     BorderBrush="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
                     BorderThickness="1"
-                    DoubleTapped="TickerValues_DoubleTapped"
-                    ItemsSource="{x:Bind ViewModel.TickerValues, Mode=OneWay}"
+                    DoubleTapped="ListViewTransactions_DoubleTapped"
+                    IsDoubleTapEnabled="True"
+                    ItemsSource="{x:Bind ViewModel.Transactions, Mode=OneWay}"
                     SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
-                    SelectionChanged="ListViewTickerValues_SelectionChanged"
+                    SelectionChanged="ListViewTransactions_SelectionChanged"
                     SelectionMode="Single"
                     ShowsScrollingPlaceholders="True">
                     <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="models:TickerValue">
+                        <DataTemplate x:DataType="models:Transaction">
                             <Grid>
-                                <Grid.ContextFlyout>
-                                    <MenuFlyout>
-                                        <MenuFlyoutItem Click="TickerValueDeleteItem_Click" Text="Delete" />
-                                    </MenuFlyout>
-                                </Grid.ContextFlyout>
-
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="*" />
-                                    <RowDefinition Height="*" />
-                                </Grid.RowDefinitions>
-
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
 
+                                <!--  Transaction Date  -->
                                 <TextBlock
                                     Grid.Column="0"
                                     Margin="5,0,0,0"
                                     HorizontalAlignment="Left"
                                     Style="{ThemeResource BaseTextBlockStyle}"
-                                    Text="{x:Bind Ticker}" />
+                                    Text="{x:Bind Date}" />
+
+                                <!--  Ticker  -->
                                 <TextBlock
-                                    Grid.Row="0"
                                     Grid.Column="1"
-                                    Margin="15,0,0,0"
+                                    Margin="20,0,0,0"
+                                    HorizontalAlignment="Left"
+                                    Style="{ThemeResource BaseTextBlockStyle}"
+                                    Text="{x:Bind Ticker}" />
+
+                                <!--  Transaction Type (Buy/Sell)  -->
+                                <TextBlock
+                                    Grid.Column="2"
+                                    Margin="0,0,0,0"
+                                    HorizontalAlignment="Left"
+                                    Style="{ThemeResource BaseTextBlockStyle}"
+                                    Text="{x:Bind Type}" />
+
+                                <!--  # Shares  -->
+                                <TextBlock
+                                    Grid.Column="3"
+                                    Margin="0,0,0,0"
                                     HorizontalAlignment="Right"
                                     Style="{ThemeResource BodyTextBlockStyle}"
-                                    Text="{x:Bind Value}" />
+                                    Text="{x:Bind Shares}" />
+
+                                <!--  Price  -->
+                                <TextBlock
+                                    Grid.Column="4"
+                                    Margin="0,0,0,0"
+                                    HorizontalAlignment="Right"
+                                    Style="{ThemeResource BodyTextBlockStyle}"
+                                    Text="{x:Bind Price}" />
+
+                                <!--  Cost  -->
+                                <TextBlock
+                                    Grid.Column="5"
+                                    Margin="0,0,0,0"
+                                    HorizontalAlignment="Right"
+                                    Style="{ThemeResource BodyTextBlockStyle}"
+                                    Text="{x:Bind CostString}" />
+
                             </Grid>
 
                         </DataTemplate>
@@ -122,16 +183,21 @@
             Grid.Row="2"
             HorizontalAlignment="Right"
             Orientation="Horizontal">
+
+            <!-- Save Button -->
             <Button
                 x:Name="ButtonSave"
                 Margin="8"
-                Click="{x:Bind ViewModel.SaveItemAndReturnAsync}"
+                Command="{x:Bind ViewModel.SaveCommand}"
                 Content="Save" />
+
+            <!-- Cancel Button -->
             <Button
                 x:Name="ButtonCancel"
                 Margin="8"
                 Command="{x:Bind ViewModel.CancelCommand}"
                 Content="Cancel" />
+            
         </StackPanel>
 
     </Grid>

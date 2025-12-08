@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="PortfolioManager.Dialogs.TransactionDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:PortfolioManager.Dialogs"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel Orientation="Vertical">
+
+        <!--  Ticker  -->
+        <TextBox
+            x:Name="ticker"
+            Margin="0,15,0,15"
+            Header="Ticker"
+            Text="{x:Bind Path=Ticker, Mode=TwoWay}"
+            TextChanged="Ticker_TextChanged" />
+
+        <!-- Transaction type (buy or sell) -->
+        <ComboBox x:Name="transactionType" 
+                  SelectionChanged="TransactionType_SelectionChanged" 
+                  Header="Transaction Type" 
+                  PlaceholderText="BUY/SELL"
+                  SelectedValue="{x:Bind TransactionType, Mode=TwoWay}"
+                  Width="200">
+            <x:String>BUY</x:String>
+            <x:String>SELL</x:String>
+        </ComboBox>
+
+        <!--  Shares  -->
+        <TextBox
+            x:Name="shares"
+            Margin="0,15,0,15"
+            Header="Number of Shares"
+            Text="{x:Bind Path=Shares, Mode=TwoWay}"
+            TextChanged="Shares_TextChanged" />
+
+        <!--  Price  -->
+        <TextBox
+            x:Name="price"
+            Margin="0,15,0,15"
+            Header="Price"
+            Text="{x:Bind Path=Price, Mode=TwoWay}"
+            TextChanged="Price_TextChanged" />
+
+    </StackPanel>
+
+</Page>

@@ -6,7 +6,7 @@ namespace PortfolioManager;
 
 public sealed partial class MainWindow : WindowEx
 {
-    private Microsoft.UI.Dispatching.DispatcherQueue dispatcherQueue;
+    private readonly Microsoft.UI.Dispatching.DispatcherQueue dispatcherQueue;
 
     private UISettings settings;
 
@@ -15,6 +15,7 @@ public sealed partial class MainWindow : WindowEx
         InitializeComponent();
 
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets/WindowIcon.ico"));
+
         Content = null;
         Title = "AppDisplayName".GetLocalized();
 
@@ -34,4 +35,5 @@ public sealed partial class MainWindow : WindowEx
             TitleBarHelper.ApplySystemThemeToCaptionButtons();
         });
     }
+
 }

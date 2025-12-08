@@ -22,15 +22,11 @@ namespace PortfolioManager;
 
 public partial class App : Application
 {
-    public static FrameworkElement? MainRoot
-    {
-        get; private set;
-    }
+    public static WindowEx MainWindow { get; } = new MainWindow();
 
-    public IHost Host
-    {
-        get;
-    }
+    public static FrameworkElement? MainRoot { get; private set; }
+
+    public IHost Host { get; }
 
     public static T GetService<T>()
         where T : class
@@ -43,8 +39,6 @@ public partial class App : Application
         return service;
     }
 
-    public static WindowEx MainWindow { get; } = new MainWindow();
-
     public static UIElement? AppTitlebar { get; set; }
 
     public App()
@@ -52,6 +46,7 @@ public partial class App : Application
         InitializeComponent();
 
         Host = Microsoft.Extensions.Hosting.Host.
+
         CreateDefaultBuilder().
         UseContentRoot(AppContext.BaseDirectory).
         ConfigureServices((context, services) =>
@@ -64,10 +59,17 @@ public partial class App : Application
             // Services
             services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
             services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
-            services.AddSingleton<IFolderSelectorService, FolderSelectorService>();
-            services.AddSingleton<IFileSelectorService, PythonLibrarySelectorService>();
 
             services.AddTransient<INavigationViewService, NavigationViewService>();
+
+            services.AddSingleton<IDatabaseFolderSelectorService, DatabaseFolderSelectorService>();
+            services.AddSingleton<IScriptFolderSelectorService, ScriptFolderSelectorService>();
+            services.AddSingleton<IPythonFileSelectorService, PythonFileSelectorService>();
+            services.AddSingleton<ITickerAttributesSelectorService, TickerAttributesSelectorService>();
+
+            services.AddSingleton<IDefaultRiskFreeRateService, DefaultRiskFreeRateService>();
+            services.AddSingleton<IDefaultBenchmarkIndexService, DefaultBenchmarkIndexService>();
+            services.AddSingleton<IDefaultStartDateOffsetService, DefaultStartDateOffsetService>();
 
             services.AddSingleton<IActivationService, ActivationService>();
             services.AddSingleton<IPageService, PageService>();
@@ -75,17 +77,25 @@ public partial class App : Application
 
             // Core Services
             services.AddSingleton<IDataService, SqliteDataService>();
-            services.AddSingleton<IPythonService, PythonService>();
             services.AddSingleton<IFileService, FileService>();
+            services.AddSingleton<IPythonService, PythonService>();
+            services.AddSingleton<ITickerAttributesService, TickerAttributesService>();
 
             // Views and ViewModels
             services.AddTransient<PortfolioItemViewModel>();
             services.AddTransient<PortfolioItemPage>();
+
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<SettingsPage>();
 
+            services.AddTransient<PortfolioAnalysisViewModel>();
+            services.AddTransient<PortfolioAnalysisPage>();
+
             services.AddTransient<PortfolioDetailViewModel>();
             services.AddTransient<PortfolioDetailPage>();
+
+            services.AddTransient<PortfolioDividendCalendarViewModel>();
+            services.AddTransient<PortfolioDividendCalendarPage>();
 
             services.AddTransient<PortfolioViewModel>();
             services.AddTransient<PortfolioPage>();
@@ -99,7 +109,23 @@ public partial class App : Application
         Build();
 
         UnhandledException += App_UnhandledException;
+
+        MainWindow.Closed += MainWindow_Closed;
     }
+
+    private void MainWindow_Closed(object sender, WindowEventArgs args)
+    {
+        try
+        {
+            IPythonService? pythonService = App.GetService<IPythonService>();
+
+            pythonService.Shutdown();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex);
+        }
+    } 
 
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
     {
@@ -116,9 +142,14 @@ public partial class App : Application
     {
         base.OnLaunched(args);
 
-        await App.GetService<IActivationService>().ActivateAsync(args);
+        IActivationService? activationService = App.GetService<IActivationService>();
 
-        MainRoot = MainWindow.Content as FrameworkElement;
+        if (activationService is not null)
+        {
+            await activationService.ActivateAsync(args);
+
+            MainRoot = MainWindow.Content as FrameworkElement;
+        }
     }
 
     public static string WinAppSdkDetails => string.Format("Windows App SDK {0}.{1}", WASDK.Release.Major, WASDK.Release.Minor);
@@ -146,12 +177,10 @@ public partial class App : Application
     // Generic exception reporting
     public static async void ReportException(Exception exc)
     {
-        var themeSelectorService = App.GetService<IThemeSelectorService>();
-
         ContentDialog dialog = new()
         {
             XamlRoot = MainWindow.Content.XamlRoot,
-            RequestedTheme = themeSelectorService.Theme,
+            RequestedTheme = GetService<IThemeSelectorService>().Theme,
             Title = "Exception Report",
             PrimaryButtonText = "OK",
             DefaultButton = ContentDialogButton.Primary,
@@ -160,5 +189,12 @@ public partial class App : Application
         };
 
         _ = await dialog.ShowAsync();
+    }
+
+    // Called to initialize file and folder pickers
+    public static void InitializePicker(object picker)
+    {
+        var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(MainWindow);
+        WinRT.Interop.InitializeWithWindow.Initialize(picker, hWnd);
     }
 }

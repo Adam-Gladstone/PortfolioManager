@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="PortfolioManager.Views.PortfolioDividendCalendarPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:behaviors="using:PortfolioManager.Behaviors"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:PortfolioManager.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:PortfolioManager.Core.Models"
+    xmlns:tableview="using:WinUI.TableView"
+    xmlns:viewmodels="using:PortfolioManager.ViewModels"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    mc:Ignorable="d">
+
+    <!--  Setup page header (including the title)  -->
+    <behaviors:NavigationViewHeaderBehavior.HeaderTemplate>
+
+        <DataTemplate x:DataType="viewmodels:PortfolioDividendCalendarViewModel">
+
+            <CommandBar Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Foreground="{ThemeResource ApplicationForegroundThemeBrush}">
+
+                <CommandBar.Content>
+                    <TextBlock Text="Portfolio Dividend Calendar" />
+                </CommandBar.Content>
+
+            </CommandBar>
+
+        </DataTemplate>
+
+    </behaviors:NavigationViewHeaderBehavior.HeaderTemplate>
+
+    <Grid>
+
+        <ProgressRing IsActive="{x:Bind ViewModel.IsWorking, Mode=OneWay}" />
+
+        <!--  Default TableView  -->
+        <tableview:TableView
+            Margin="0,0,0,80"
+            local:TableViewExtensions.Columns="{x:Bind ViewModel.Columns, Mode=OneWay}"
+            AutoGenerateColumns="False"
+            ItemsSource="{x:Bind ViewModel.CalendarData, Mode=OneWay}"
+            Language="en-GB"
+            SelectionMode="Extended" />
+
+    </Grid>
+
+</Page>

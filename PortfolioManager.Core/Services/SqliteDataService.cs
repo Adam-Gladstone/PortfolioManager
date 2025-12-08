@@ -11,7 +11,7 @@ namespace PortfolioManager.Core.Services;
 public class SqliteDataService : IDataService
 {
     private const string dbFilename = "PortfolioData.db";
-    public string DbFilename => dbFilename;
+    public static string DbFilename => dbFilename;
 
     private string dbPath = "";
 
@@ -24,8 +24,8 @@ public class SqliteDataService : IDataService
     public async Task InitializeDataAsync()
     {
         using var db = GetOpenConnectionAsync();
-        
-        await CreateTickerValuesTableAsync(db);
+
+        await CreateTransactionsTableAsync(db);
 
         await CreatePortfolioItemTableAsync(db);
     }
@@ -33,6 +33,7 @@ public class SqliteDataService : IDataService
     public async Task<int> AddItemAsync(PortfolioItem item)
     {
         using var db = GetOpenConnectionAsync();
+        
         return await InsertPortfolioItemAsync(db, item);
     }
 
@@ -52,18 +53,21 @@ public class SqliteDataService : IDataService
     public async Task<IList<PortfolioItem>> GetItemsAsync()
     {
         using var db = GetOpenConnectionAsync();
+        
         return await GetAllPortfolioItemsAsync(db);
     }
 
     public async Task<bool> DeleteItemAsync(PortfolioItem item)
     {
         using var db = GetOpenConnectionAsync();
+        
         return await DeletePortfolioItemAsync(db, item.Id);
     }
 
     public async Task UpdateItemAsync(PortfolioItem item)
     {
         using var db = GetOpenConnectionAsync();
+
         await UpdatePortfolioItemAsync(db, item);
     }
 
@@ -75,13 +79,16 @@ public class SqliteDataService : IDataService
         return connection;
     }
 
-    private static async Task CreateTickerValuesTableAsync(SqliteConnection db)
+    private static async Task CreateTransactionsTableAsync(SqliteConnection db)
     {
         var tableCommand = @"CREATE TABLE IF NOT 
-                EXISTS TickerValues (Id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                EXISTS Transactions (Id INTEGER PRIMARY KEY AUTOINCREMENT, 
                 PortfolioId INTEGER NOT NULL,
+                Date DATE NOT NULL,
                 Ticker TEXT NOT NULL,
-                Value REAL NOT NULL,
+                Type TEXT NOT NULL,
+                Shares INTEGER NOT NULL,
+                Price REAL NOT NULL,
                 CONSTRAINT fk_portfolioitems 
                 FOREIGN KEY(PortfolioId) 
                 REFERENCES PortfolioItems(Id)
@@ -97,9 +104,7 @@ public class SqliteDataService : IDataService
         var tableCommand = @"CREATE TABLE IF NOT 
                 EXISTS PortfolioItems (Id INTEGER PRIMARY KEY AUTOINCREMENT, 
                 Name TEXT NOT NULL,
-                Type TEXT,
-                SymbolCode INTEGER NOT NULL,
-                SymbolName TEXT NOT NULL
+                Type TEXT
             )";
 
         var createTable = new SqliteCommand(tableCommand, db);
@@ -114,9 +119,7 @@ public class SqliteDataService : IDataService
                             @"SELECT
                                     [PortfolioItems].[Id],
                                     [PortfolioItems].[Name],
-                                    [PortfolioItems].[Type],
-                                    [PortfolioItems].[SymbolCode],
-                                    [PortfolioItems].[SymbolName]
+                                    [PortfolioItems].[Type]
                                 FROM
                                     [PortfolioItems]"
                         );
@@ -128,7 +131,11 @@ public class SqliteDataService : IDataService
 
             if (portfolioItem != null)
             {
-                portfolioItem.TickerValues = GetTickerValues(db, portfolioItem.Id);
+                portfolioItem.Transactions = GetTransactions(db, portfolioItem.Id);
+
+                portfolioItem.Holdings = GetHoldings(db, portfolioItem.Id);
+
+                portfolioItem.TotalHoldings = portfolioItem.Holdings.Sum(x => x.TotalCost);
             }
             else
             {
@@ -137,10 +144,19 @@ public class SqliteDataService : IDataService
                     Id = result.Id,
                     Name = result.Name,
                     Type = result.Type,
-                    SymbolCode = result.SymbolCode,
-                    SymbolName = result.SymbolName
                 };
-                portfolioItem.TickerValues = GetTickerValues(db, portfolioItem.Id);
+
+                portfolioItem.Transactions = GetTransactions(db, portfolioItem.Id);
+
+                portfolioItem.Holdings = GetHoldings(db, portfolioItem.Id);
+
+                portfolioItem.TotalHoldings = portfolioItem.Holdings.Sum(x => x.TotalCost);
+
+                // Update the percentage
+                foreach (var holding in portfolioItem.Holdings)
+                {
+                    holding.Percent = holding.TotalCost / portfolioItem.TotalHoldings * 100.0;
+                }
 
                 portfolioItems.Add(portfolioItem);
             }
@@ -149,65 +165,107 @@ public class SqliteDataService : IDataService
         return portfolioItems;
     }
 
-    private static Dictionary<string, double> GetTickerValues(SqliteConnection db, int portfolioId)
+    private static List<Transaction> GetTransactions(SqliteConnection db, int portfolioId)
     {
-        var query = @$"SELECT 
-	                    [TickerValues].[Ticker],
-	                    [TickerValues].[Value]
+        var query = @$"SELECT
+                        [Transactions].[Id],
+                        [Transactions].[Date],
+                        [Transactions].[Ticker],
+                        [Transactions].[Type],
+                        [Transactions].[Shares],
+                        [Transactions].[Price]
                     FROM
-	                    [TickerValues]
+	                    [Transactions]
                     WHERE
-	                    [TickerValues].[PortfolioId] = {portfolioId}";
+	                    [Transactions].[PortfolioId] = {portfolioId}
+                        ";
 
         using var command = new SqliteCommand(query, db);
 
-        var tickerValues = new Dictionary<string, double>();
+        var transactions = new List<Transaction>();
 
         using var reader = command.ExecuteReader();
         if (reader.HasRows)
         {
             while (reader.Read())
             {
-                tickerValues[reader.GetString(0)] = reader.GetDouble(1);
+                var transaction = new Transaction()
+                {
+                    TransactionId = reader.GetInt32(0),
+                    Date = reader.GetDateTime(1),
+                    Ticker = reader.GetString(2),
+                    Type = reader.GetString(3),
+                    Shares = reader.GetInt64(4),
+                    Price = reader.GetDouble(5),
+                };
+
+                transactions.Add(transaction);
             }
         }
 
-        return tickerValues;
+        return transactions;
+    }
+
+    private static List<Holding> GetHoldings(SqliteConnection db, int portfolioId)
+    {
+        var query = @$"SELECT 
+                        [Transactions].[Id],
+                        [Transactions].[Date],
+                        [Transactions].[Ticker],
+                        [Transactions].[Type],
+                        [Transactions].[Shares],
+                        [Transactions].[Price]
+                    FROM
+	                    [Transactions]
+                    WHERE
+	                    [Transactions].[PortfolioId] = {portfolioId}
+                        ";
+
+        using var command = new SqliteCommand(query, db);
+
+        var holdings = new Dictionary<string, Holding>();
+
+        using var reader = command.ExecuteReader();
+        if (reader.HasRows)
+        {
+            while (reader.Read())
+            {
+                var ticker = reader.GetString(2);
+                var type = reader.GetString(3);
+                long multiple = (type == "BUY") ? 1 : -1;
+                var shares = reader.GetInt64(4);
+                var price = reader.GetDouble(5);
+
+                var holding = holdings.TryGetValue(ticker, out var value) ? value : new Holding();
+
+                holding.Ticker = ticker;
+                holding.TotalShares += shares * multiple;
+                holding.TotalCost += shares * price;
+
+                holding.AverageCost = (holding.TotalShares != 0) ? (holding.TotalCost / holding.TotalShares) : 0;
+
+                holdings[ticker] = holding;
+            }
+        }
+
+        return [.. holdings.Values.Where(x => x.TotalShares > 0)];
     }
 
     private static async Task<int> InsertPortfolioItemAsync(SqliteConnection db, PortfolioItem item)
     {
         var newIds = await db.QueryAsync<long>(
             @"INSERT INTO PortfolioItems
-                    (Name, Type, SymbolCode, SymbolName)
+                    (Name, Type)
                     VALUES
-                    (@Name, @Type, @SymbolCode, @SymbolName);
+                    (@Name, @Type);
                 SELECT last_insert_rowid()", item);
 
         var portfolioId = (int)newIds.First();
 
-        var tickerValues = item.TickerValues;
-        if (tickerValues.Count > 0)
+        var transactions = item.Transactions;
+        if (transactions.Count > 0)
         {
-            var sb = new StringBuilder();
-            sb.Append("INSERT INTO TickerValues (PortfolioId, Ticker, Value) VALUES ");
-
-            var keys = tickerValues.Keys;
-            var idx = 0;
-            foreach (var key in keys)
-            {
-                if (idx > 0 && idx < item.TickerValues.Count)
-                {
-                    sb.Append(",\n");
-                }
-
-                sb.Append($"({portfolioId}, \"{key}\", {tickerValues[key]})");
-                ++idx;
-            }
-
-            sb.AppendLine(";");
-
-            _ = await db.QueryAsync<long>(sb.ToString());
+            await InsertTransactionsAsync(db, portfolioId, transactions);
         }
 
         return portfolioId;
@@ -218,47 +276,21 @@ public class SqliteDataService : IDataService
         await db.QueryAsync(
             @"UPDATE PortfolioItems
                   SET Name = @Name,
-                    Type = @Type,
-                    SymbolCode = @SymbolCode, 
-                    SymbolName = @SymbolName
+                    Type = @Type
                   WHERE Id = @Id;", item);
 
         var id = item.Id;
 
-        var sql = "DELETE FROM TickerValues WHERE PortfolioId = @id";
-
-        using var command = new SqliteCommand(sql, db);
-        command.Parameters.AddWithValue("@id", id);
-        var rowDeleted = command.ExecuteNonQuery();
-
-        var tickerValues = item.TickerValues;
-        if (tickerValues.Count > 0)
+        var transactions = item.Transactions;
+        if (transactions.Count > 0)
         {
-            var sb = new StringBuilder();
-            sb.Append("INSERT INTO TickerValues (PortfolioId, Ticker, Value) VALUES ");
-
-            var keys = tickerValues.Keys;
-            var idx = 0;
-            foreach (var key in keys)
-            {
-                if (idx > 0 && idx < item.TickerValues.Count)
-                {
-                    sb.Append(",\n");
-                }
-
-                sb.Append($"({id}, \"{key}\", {tickerValues[key]})");
-                ++idx;
-            }
-
-            sb.AppendLine(";");
-
-            _ = await db.QueryAsync<long>(sb.ToString());
+            await InsertTransactionsAsync(db, id, transactions);
         }
     }
 
     private static async Task<bool> DeletePortfolioItemAsync(SqliteConnection db, int id)
     {
-        var sql = "DELETE FROM TickerValues WHERE PortfolioId = @id";
+        var sql = "DELETE FROM Transactions WHERE PortfolioId = @id";
 
         using var command = new SqliteCommand(sql, db);
         command.Parameters.AddWithValue("@id", id);
@@ -266,5 +298,33 @@ public class SqliteDataService : IDataService
         var rowDeleted = command.ExecuteNonQuery();
 
         return await db.DeleteAsync<PortfolioItem>(new PortfolioItem { Id = id });
+    }
+
+    private static async Task<int> InsertTransactionsAsync(SqliteConnection db, int portfolioId, List<Models.Transaction> transactions)
+    {
+        var idx = 0;
+
+        var sb = new StringBuilder();
+
+        sb.Append("INSERT INTO Transactions (PortfolioId, Date, Ticker, Type, Shares, Price) VALUES ");
+
+        foreach (var transaction in transactions)
+        {
+            if (idx > 0 && idx < transactions.Count)
+            {
+                sb.Append(",\n");
+            }
+
+            var date = transaction.Date.ToString("yyyy-MM-dd");
+
+            sb.Append($"({portfolioId}, \"{date}\", \"{transaction.Ticker}\", \"{transaction.Type}\", {transaction.Shares}, {transaction.Price})");
+            ++idx;
+        }
+
+        sb.AppendLine(";");
+
+        _ = await db.QueryAsync<long>(sb.ToString());
+
+        return portfolioId;
     }
 }

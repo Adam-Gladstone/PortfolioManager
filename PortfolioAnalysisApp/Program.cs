@@ -9,18 +9,20 @@ internal class Program
     {
         try
         {
-            Runtime.PythonDLL = ConfigurationManager.AppSettings["PythonDll"].ToString();
+            Runtime.PythonDLL = ConfigurationManager.AppSettings["PythonDll"]?.ToString();
 
             var cmd = Environment.GetCommandLineArgs();
             PythonEngine.Initialize();
 
             using (Py.GIL())
             {
-                var script = File.ReadAllText(@"D:\Development\Projects\C#\PortfolioManager\Scriptlets\portfolio_analysis.py");
+                var script1 = File.ReadAllText(@"D:\Development\Projects\C#\PortfolioManager\Scriptlets\portfolio_analysis.py");
+                var script2 = File.ReadAllText(@"D:\Development\Projects\C#\PortfolioManager\Scriptlets\portfolio_data.py");
 
                 dynamic module = Py.CreateScope("PortfolioAnalysis");
 
-                module.Exec(script);
+                module.Exec(script1);
+                module.Exec(script2);
 
                 dynamic tickers = PythonEngine.Eval("{" +
                     "\'SAB.MC\' : 1000.0, " +
@@ -28,6 +30,16 @@ internal class Program
                     "\'ITX.MC\' : 1000.0, " +
                     "\'MEL.MC\' : 1000.0, " +
                     "}");
+
+                dynamic fields = PythonEngine.Eval("[" +
+                    "\'trailingPegRatio\', " +
+                    "\'trailingPE\', " +
+                    "\'forwardPE\', " +
+                    "\'marketCap\', " +
+                    "\'beta\', " +
+                    "]");
+
+                dynamic portfolio_data = module.ticker_data(tickers, fields);
 
                 var start_date = "2019-11-28";
                 var end_date = "2024-11-28";

@@ -1,39 +1,24 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using PortfolioManager.Contracts.Services;
-using PortfolioManager.Core.Models;
 using PortfolioManager.Dialogs;
 using PortfolioManager.ViewModels;
+
+using Transaction = PortfolioManager.Core.Models.Transaction;
 
 namespace PortfolioManager.Views;
 
 public sealed partial class PortfolioItemPage : Page
 {
-    public PortfolioItemViewModel ViewModel
-    {
-        get;
-    }
+    public PortfolioItemViewModel ViewModel { get; set; }
 
     public PortfolioItemPage()
     {
         ViewModel = App.GetService<PortfolioItemViewModel>();
         
         InitializeComponent();
-    }
 
-    private void TickerValueDeleteItem_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender != null)
-        {
-            var item = ((FrameworkElement)sender).DataContext;
-            if (item != null)
-            {
-                if (item is TickerValue tickerValue)
-                {
-                    ViewModel.TickerValues.Remove(tickerValue);
-                }
-            }
-        }
+        UpdateData();
     }
 
     private void PortfolioName_TextChanged(object sender, TextChangedEventArgs e)
@@ -49,21 +34,21 @@ public sealed partial class PortfolioItemPage : Page
     private void UpdateData()
     {
         ButtonSave.IsEnabled = !string.IsNullOrEmpty(portfolioName.Text) &&
-                                        !string.IsNullOrEmpty(portfolioType.Text);
+                               !string.IsNullOrEmpty(portfolioType.Text);
     }
 
-    private static ContentDialog CreateTickerValueDialog()
+    private static ContentDialog CreateTransactionDialog()
     {
         ContentDialog dialog = new()
         {
             XamlRoot = App.MainRoot?.XamlRoot,
             RequestedTheme = App.GetService<IThemeSelectorService>().Theme,
-            Title = "Ticker Value",
+            Title = "Add Transaction",
             PrimaryButtonText = "OK",
             IsPrimaryButtonEnabled = false,
             CloseButtonText = "Cancel",
             DefaultButton = ContentDialogButton.Primary,
-            Content = new TickerValueDialog()
+            Content = new TransactionDialog()
         };
 
         return dialog;
@@ -73,21 +58,28 @@ public sealed partial class PortfolioItemPage : Page
     {
         try
         {
-            var dialog = CreateTickerValueDialog();
+            var dialog = CreateTransactionDialog();
 
             var result = await dialog.ShowAsync();
 
             if (result == ContentDialogResult.Primary)
             {
-                var tickerValueDialog = dialog.Content as TickerValueDialog;
+                var transactionDialog = dialog.Content as TransactionDialog;
 
-                var tickerValue = new TickerValue()
+                if (transactionDialog != null)
                 {
-                    Ticker = tickerValueDialog?.Ticker,
-                    Value = Convert.ToDouble(tickerValueDialog?.Value)
-                };
+                    var transaction = new Transaction()
+                    {
+                        TransactionId = -1,
+                        Ticker = transactionDialog.Ticker,
+                        Type = transactionDialog.TransactionType,
+                        Date = DateTime.Now,
+                        Shares = Convert.ToInt64(transactionDialog.Shares),
+                        Price = Convert.ToDouble(transactionDialog.Price)
+                    };
 
-                ViewModel.TickerValues.Add(tickerValue);
+                    ViewModel.Transactions.Add(transaction);
+                }
             }
         }
         catch (Exception exc)
@@ -96,7 +88,7 @@ public sealed partial class PortfolioItemPage : Page
         }
     }
 
-    private async void TickerValues_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
+    private async void ListViewTransactions_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
     {
         if (App.MainRoot == null) { return; }
 
@@ -104,25 +96,33 @@ public sealed partial class PortfolioItemPage : Page
 
         try
         {
-            var tickerValue = ViewModel.Selected;
-
-            var dialog = CreateTickerValueDialog();
-
-            var tickerValueDialog = dialog.Content as TickerValueDialog;
-            if (tickerValueDialog != null)
+            var transaction = ViewModel.Selected;
+            if (transaction.TransactionId == -1)
             {
-                tickerValueDialog.Ticker = tickerValue.Ticker;
-                tickerValueDialog.Value = tickerValue.Value.ToString();
-            }
+                var dialog = CreateTransactionDialog();
 
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary)
-            {
-                tickerValue.Ticker = tickerValueDialog?.Ticker;
-                tickerValue.Value = Convert.ToDouble(tickerValueDialog?.Value);
+                var transactionDialog = dialog.Content as TransactionDialog;
 
-                ViewModel.TickerValues.Remove(tickerValue);
-                ViewModel.TickerValues.Add(tickerValue);
+                if (transactionDialog != null)
+                {
+                    transactionDialog.Ticker = transaction.Ticker;
+                    transactionDialog.TransactionType = transaction.Type;
+                    transactionDialog.Shares = transaction.Shares.ToString();
+                    transactionDialog.Price = transaction.Price.ToString();
+
+                    var result = await dialog.ShowAsync();
+                    if (result == ContentDialogResult.Primary)
+                    {
+                        transaction.Ticker = transactionDialog.Ticker;
+                        transaction.Type = transactionDialog.TransactionType;
+                        transaction.Date = DateTime.Now;
+                        transaction.Shares = Convert.ToInt64(transactionDialog.Shares);
+                        transaction.Price = Convert.ToDouble(transactionDialog.Price);
+
+                        ViewModel.Transactions.Remove(transaction);
+                        ViewModel.Transactions.Add(transaction);
+                    }
+                }
             }
         }
         catch (Exception exc)
@@ -131,11 +131,11 @@ public sealed partial class PortfolioItemPage : Page
         }
     }
 
-    private void ListViewTickerValues_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void ListViewTransactions_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (ListViewTickerValues.SelectedItem is TickerValue tickerValue)
+        if (ListViewTransactions.SelectedItem is Transaction transaction)
         {
-            ViewModel.Selected = tickerValue;
+            ViewModel.Selected = transaction;
         }
         else
         {
