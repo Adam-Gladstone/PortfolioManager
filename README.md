@@ -164,22 +164,17 @@ Enter the data (risk free rate, benchmark index and start date offset). The star
 
 The Ticker Attributes contains a list of ticker attribute names supported by Yahoo Finance, and which can be requested. Of the 150 or so attributes, we specify only 6. This is the portfolio data returned from the Data menu.
 
-With this completed, we can proceed to create a portfolio.
-1) Press the Add button and you will be taken to a Portfolio Details screen:
-
-<a href="https://github.com/Adam-Gladstone/PortfolioManager">
-  <img src="Images/PortfolioDetailsScreen.png" alt="Portfolio details screen">
-</a>
-
-Fill in the portfolio name and a type (e.g. Equity). Transactions can be added manually using the 'Add Transaction' button. This brings up a window that can be completed with the transaction details.
+With this completed, we can proceed to create a portfolio. Press the Add button and you will be taken to a Portfolio Details screen. Fill in the portfolio name and (optionally) a type (e.g. Equity). Transactions can be added manually using the 'Add Transaction' button. This brings up a window that can be completed with the transaction details.
 
 <a href="https://github.com/Adam-Gladstone/PortfolioManager">
   <img src="Images/PortfolioItem_AddTransaction.png" alt="Portfolio Item Add transaction screen">
 </a>
 
-This works fine if you have a few transactions but soom becomes tedious. Instead, we can use the 'Import Transactions' function. This imports transactions from a.csv file. The transactions list the following:
+This works fine if you have a few transactions but soom becomes tedious. Instead, we can use the 'Import Transactions' function. This imports transactions from a.csv file. The transactions have the following fields:
 
-Date,Ticker,Buy/Sell,Amount,Price,Total
+```Date,Ticker,Buy/Sell,Amount,Price,Total```
+
+This is similar to the structure used by Yahoo finance.
 
 <a href="https://github.com/Adam-Gladstone/PortfolioManager">
   <img src="Images/PortfolioItem_ImportTransactions.png" alt="Portfolio Item Import transactions screen">
